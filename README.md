@@ -153,12 +153,3 @@ Create `.env.local`:
 OPENAI_API_KEY=your_key_here
 SYSTEM_PROMPT=   # optional — inject Konew product metadata and guardrails
 ```
-
----
-
-## Winning Vision
-
-> Customers get instant clarity and confidence. Lenders convert leads in real time.  
-> Loan origination becomes a conversation — not a form.
-
-**References:** [konew.com](https://www.konew.com) · [kcash.hk](https://kcash.hk/)
