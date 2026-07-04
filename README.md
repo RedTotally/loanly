@@ -1,73 +1,117 @@
 # Loanly
 
-**Tagline:** *Feeling Loanly? Find Your Sugar Daddies or Mommies.*
+**Tagline:** *Reimagine loan origination as a conversation, not a form.*
 
-Loanly is a peer-to-peer lending experience built like a social video feed. Borrowers pitch their story (with a YouTube Short as proof-of-vibe), AI structures the loan terms, and lenders swipe through applicants the way they scroll Reels — accept or decline with a flick of the wrist.
+**SEA Hacks · Hong Kong · July 4–5, 2026**  
+**Industry Challenge:** KCash Limited (Konew FinTech Group)
 
----
-
-## TL;DR
-
-Loanly is **Tinder meets TikTok for loans**. Borrowers submit a name, story, and YouTube Short; AI drafts loan terms; lenders scroll a vertical feed of applicants, watch their Short, then swipe right to fund or left to pass. Every decision is logged in a browser-side hash chain (a lightweight blockchain prototype).
+Loanly replaces Konew’s static lead form with an AI prompt-based interface. Customers describe their financial needs in natural language; the system understands intent, maps needs to Konew’s loan products, and delivers real-time Approval-in-Principle (AIP) options — then hands a clean summary to the sales team for follow-up.
 
 ---
 
-## The Problem It Solves
+## The Problem
 
-Traditional loan applications are forms, PDFs, and waiting rooms. Loanly reframes lending as a **discovery and decision flow** — fast, visual, and mobile-native. Borrowers get a structured pitch without filling out a 20-page application. Lenders get a scannable feed with credit scores, repayment plans, and a short video to humanize each request.
+Konew captures website leads through traditional forms. At first contact there is limited understanding of the customer’s actual needs, so follow-up calls become lengthy Q&A sessions — and leads drop off before any real-time offer is presented.
+
+**Key issues we address:**
+
+- Limited understanding of customer needs at first contact
+- Slow, manual follow-up via sales calls
+- No real-time offer → higher drop-off before engagement
+
+---
+
+## Our Solution
+
+Loanly turns the pre-loan journey into a fast, intuitive, personalized conversation:
+
+1. **Customer** describes their need in plain language (prompt UI).
+2. **AI** understands intent, stays within Konew’s product scope, and structures a tailored offer.
+3. **AIP** is presented instantly with amount and tenure options.
+4. **Sales team** receives a customer profile summary and full activity log — no callback required to understand the lead.
+
+---
+
+## Judging Criteria — How Loanly Delivers
+
+### 1. Shorter journey
+
+> Does the solution deliver a relevant offer in real time, without requiring a callback?
+
+- Customers start with a **natural-language prompt** instead of a multi-field form.
+- **GPT-4o-mini** (via `/api/ai`) returns a structured loan plan in seconds: product, amount, rate, and repayment summary.
+- The customer sees a concrete offer **before** any sales call — reducing time-to-clarity from days to under a minute.
+
+### 2. Quality of the offer
+
+> Do the generated loan products and AIP align with the customer’s stated needs?
+
+- The AI system prompt is **configurable via `SYSTEM_PROMPT`** and designed to ingest **Konew product metadata** (personal loans, mortgages, SME financing) so recommendations stay on-catalog.
+- Intent is **restricted to Konew products** — the model does not reference banks, competitors, or off-market alternatives.
+- Output is **structured JSON** (Zod-validated): story summary, loan product name, amount, and interest rate — grounded in what the customer actually said.
+
+### 3. Clean handoff
+
+> Does it provide a useful customer summary and activity log for follow-up?
+
+- Every customer interaction and decision is recorded in an **append-only activity log** (SHA-256 hash chain, viewable via **Open Logs**).
+- The **sales view** (Lender mode) surfaces each lead as a scannable card: story, product, amount, rate, repayment plan, and credit score.
+- Sales can **accept or decline** in-app; each action is timestamped (GMT+8) and persisted for audit and follow-up.
+
+### 4. HK-ready
+
+> Is it a solution suitable for the Hong Kong context (Chinese + English)?
+
+- Built for **Hong Kong licensed money lending** workflows (Konew / KCash / PayKool product families).
+- Timestamps and demo scenarios use **GMT+8** and HK-relevant use cases (e.g. property down payment, SME cash flow).
+- UI and copy are structured for **bilingual extension** (English + 中文) as a near-term deliverable.
+
+### 5. Demo — 2-minute end-to-end walkthrough
+
+| Step | Action | What judges see |
+|------|--------|-----------------|
+| 0:00 | Customer opens Loanly | Prompt UI — no static form |
+| 0:20 | Types need in natural language | e.g. *"I need $500,000 for a renovation, repay over 5 years"* |
+| 0:40 | AI returns structured plan | Konew-aligned product, amount, rate, repayment |
+| 1:00 | Customer confirms | Lead enters sales queue instantly |
+| 1:20 | Sales opens Lender mode | Full profile card with score and terms |
+| 1:40 | Sales accepts / logs decision | Activity log updated in real time |
+| 2:00 | Open Logs | Tamper-evident audit trail for compliance |
 
 ---
 
 ## How It Works
 
-### Borrower Mode
+### Customer journey (Borrower mode)
 
-1. Enter your **name** and **story** — why you need money and how you'll pay it back.
-2. Paste a **YouTube Short URL** — a quick video pitch or context clip.
-3. Hit **Submit** — Loanly's AI (GPT-4o-mini) reads your pitch and returns:
-   - A polished **story summary**
-   - A suggested **loan product** (e.g. "Game Development Loan", "Small Business Expansion Loan")
-   - A recommended **amount** and **interest rate**
-4. Review the plan, then **Submit** to publish your application to the lender feed.
+1. Enter **name** and describe your **financial need** in natural language.
+2. Optionally attach a **YouTube Short** for additional context.
+3. Hit **Submit** — AI returns:
+   - A polished **need summary**
+   - A **Konew-aligned loan product**
+   - Suggested **amount**, **interest rate**, and repayment terms
+4. Review the plan and **submit** — the lead is queued for sales immediately.
 
-### Lender Mode
+### Sales journey (Lender mode)
 
-1. **Scroll vertically** through loan applications — one full-screen card at a time, Reels-style.
-2. Each card opens with the borrower's **YouTube Short** playing automatically.
-3. **Tap** the video to dismiss it and reveal the full loan details:
-   - Story
-   - Loan product
-   - Amount requested
-   - Interest rate
-   - Proposed repayment schedule
-4. **Swipe right** to accept · **Swipe left** to decline (with throw-velocity detection, like a dating app).
-5. A **credit score** (0–100) is shown as a green bar beside the feed — the higher the score, the more of the bar fills.
-
-When you've reviewed everyone, the feed shows: *"No more reels — check back later."*
+1. **Scroll** through incoming leads — one full-screen card at a time.
+2. Review each customer’s story, product match, amount, rate, and repayment plan.
+3. **Swipe right** to accept · **Swipe left** to decline.
+4. Every decision is logged with timestamp and hash for audit.
 
 ---
 
 ## Key Features
 
-| Feature | Description |
-|--------|-------------|
-| **Reels-style feed** | Vertical snap-scroll between applicants; wheel, touch, and drag navigation |
-| **YouTube Shorts integration** | Embedded video with scrub bar; auto-plays only when the card is settled in view |
-| **Swipe-to-decide** | Horizontal drag on the story card — right = accept, left = decline |
-| **AI loan structuring** | `/api/ai` turns freeform borrower pitches into structured loan terms |
-| **Credit score gauge** | Visual 0–100 score per applicant, displayed as a side bar |
-| **Audit log ("Blockchain Prototype")** | Every accept/decline is appended to a local hash chain (SHA-256 + ROT13-encrypted payload) viewable in **Open Logs** |
-| **Dual roles** | Toggle between **Borrower** and **Lender** mode from the footer |
-
----
-
-## Sample Applicants (Demo Data)
-
-The app ships with three seeded profiles:
-
-- **Alexey** — Soviet programmer pitching a Tetris port ($5,000, 8% APR, score 67)
-- **Jesse** — Albuquerque small-business expansion ($3,000, 18% APR, score 55)
-- **Sherry** — Taipei apartment down-payment bridge loan ($8,500, 12% APR, score 99)
+| Feature | Judging alignment |
+|--------|-------------------|
+| **Prompt-based intake** | Shorter journey — conversation replaces static form |
+| **AI loan structuring** (`/api/ai`) | Quality of offer — needs → structured Konew product |
+| **Configurable system prompt** | Konew product metadata + intent guardrails |
+| **Instant lead queue** | Shorter journey — no callback to see an offer |
+| **Sales feed + swipe decisions** | Clean handoff — scannable profiles for follow-up |
+| **Activity log (hash chain)** | Clean handoff — tamper-evident audit trail |
+| **Credit score gauge** | Quality of offer — at-a-glance risk signal for sales |
 
 ---
 
@@ -76,32 +120,24 @@ The app ships with three seeded profiles:
 - **Framework:** Next.js 16 (App Router), React 19, TypeScript
 - **Styling:** Tailwind CSS 4
 - **AI:** Vercel AI SDK + OpenAI GPT-4o-mini (structured JSON output via Zod)
-- **Video:** YouTube IFrame API
-- **Persistence:** `localStorage` for the audit chain (client-side only)
+- **Video:** YouTube IFrame API (optional customer context)
+- **Persistence:** `localStorage` for activity log (client-side prototype)
 
 ---
 
-## Architecture Notes
+## Architecture
 
 ```
-Borrower form  →  POST /api/ai  →  GPT-4o-mini  →  structured loan plan
-                                                        ↓
-Lender feed  ←  panels state  ←  borrower submits
+Customer prompt  →  POST /api/ai  →  GPT-4o-mini  →  structured loan plan (Konew-aligned)
+                                                          ↓
+Sales feed  ←  lead queue  ←  customer confirms
      ↓
-Swipe decision  →  SHA-256 hash chain  →  localStorage (loanly-audit-chain)
+Accept / decline  →  SHA-256 hash chain  →  localStorage (loanly-audit-chain)
 ```
 
-- **No backend database** — applicant panels live in React state; audit logs persist in the browser.
-- **AI route** accepts `name`, `story`, and optional `youtubeUrl`; system prompt is overridable via `SYSTEM_PROMPT` env var.
-- **Blockchain prototype** chains blocks where each block's hash = `SHA-256(previousHash + stableStringify(payload))`, with the payload Caesar-encrypted (shift 13) for display.
-
----
-
-## Who It's For
-
-- **Hackathon / demo audiences** — a memorable, interactive take on fintech UX
-- **Borrowers** who want to pitch in plain language instead of paperwork
-- **Lenders / investors** who prefer scanning short video pitches over reading long applications
+- **No backend database** in the prototype — leads live in React state; activity logs persist in the browser.
+- **AI route** accepts `name`, `story`, and optional `youtubeUrl`; override behavior with `SYSTEM_PROMPT` in `.env.local`.
+- **Activity log** chains blocks where each hash = `SHA-256(previousHash + stableStringify(payload))`, with Caesar-encrypted payloads for display.
 
 ---
 
@@ -111,4 +147,20 @@ Swipe decision  →  SHA-256 hash chain  →  localStorage (loanly-audit-chain)
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Set your OpenAI API key (and optional `SYSTEM_PROMPT`) in `.env.local` for the AI loan planner to work.
+Open [http://localhost:3000](http://localhost:3000).
+
+Create `.env.local`:
+
+```env
+OPENAI_API_KEY=your_key_here
+SYSTEM_PROMPT=   # optional — inject Konew product metadata and guardrails
+```
+
+---
+
+## Winning Vision
+
+> Customers get instant clarity and confidence. Lenders convert leads in real time.  
+> Loan origination becomes a conversation — not a form.
+
+**References:** [konew.com](https://www.konew.com) · [kcash.hk](https://kcash.hk/)
