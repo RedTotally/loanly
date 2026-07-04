@@ -64,6 +64,97 @@ const parseAmount = (value: string) => {
   return Number.isFinite(num) ? num : 0;
 };
 
+type AuditBlock = {
+  timestamp: string;
+  previousHash: string;
+  hash: string;
+  encryptedJson: string;
+};
+
+type LoanDecisionPayload = {
+  event: "LOAN_DECISION";
+  name: string;
+  money: number;
+  interest: number;
+  score: number;
+  loan_product: string;
+  decision: "accepted" | "declined";
+};
+
+const STORAGE_KEY = "loanly-audit-chain";
+const GENESIS_HASH = "0";
+const CAESAR_SHIFT = 13;
+
+const stableStringify = (obj: unknown): string => {
+  if (obj === null || typeof obj !== "object") {
+    return JSON.stringify(obj);
+  }
+  if (Array.isArray(obj)) {
+    return `[${obj.map(stableStringify).join(",")}]`;
+  }
+  const record = obj as Record<string, unknown>;
+  const keys = Object.keys(record).sort();
+  return `{${keys.map((k) => `${JSON.stringify(k)}:${stableStringify(record[k])}`).join(",")}}`;
+};
+
+async function sha256(text: string): Promise<string> {
+  const data = new TextEncoder().encode(text);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+function caesarEncrypt(text: string, shift: number): string {
+  return text
+    .split("")
+    .map((char) => {
+      const code = char.charCodeAt(0);
+      if (code >= 65 && code <= 90) {
+        return String.fromCharCode(((code - 65 + shift) % 26) + 65);
+      }
+      if (code >= 97 && code <= 122) {
+        return String.fromCharCode(((code - 97 + shift) % 26) + 97);
+      }
+      return char;
+    })
+    .join("");
+}
+
+function formatGmt8(date: Date): string {
+  return (
+    new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Taipei",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    }).format(date) + " GMT+8"
+  );
+}
+
+function loadAuditChain(): AuditBlock[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveAuditChain(blocks: AuditBlock[]): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(blocks));
+  } catch {
+    // ignore quota / private mode errors
+  }
+}
+
 const MAX_SCORE = 100;
 const SCROLL_LOCK_MS = 400;
 const SWIPE_THRESHOLD_PX = 50;
@@ -369,6 +460,41 @@ export default function Home() {
   );
 
   const [mode, setMode] = useState<"lender" | "borrower">("borrower");
+  const [showLogs, setShowLogs] = useState(true);
+  const [logBlocks, setLogBlocks] = useState<AuditBlock[]>([]);
+
+  useEffect(() => {
+    setLogBlocks(loadAuditChain());
+  }, []);
+
+  const record = useCallback(
+    async (panel: Panel, decision: "accepted" | "declined") => {
+      const payload: LoanDecisionPayload = {
+        event: "LOAN_DECISION",
+        name: panel.name,
+        money: panel.money,
+        interest: panel.interest,
+        score: panel.score,
+        loan_product: panel.loan_product,
+        decision,
+      };
+      const chain = loadAuditChain();
+      const previousHash = chain.at(-1)?.hash ?? GENESIS_HASH;
+      const payloadJson = stableStringify(payload);
+      const hash = await sha256(previousHash + payloadJson);
+      const encryptedJson = caesarEncrypt(JSON.stringify(payload), CAESAR_SHIFT);
+      const block: AuditBlock = {
+        timestamp: formatGmt8(new Date()),
+        previousHash,
+        hash,
+        encryptedJson,
+      };
+      const updatedChain = [...chain, block];
+      saveAuditChain(updatedChain);
+      setLogBlocks(updatedChain);
+    },
+    [],
+  );
 
   const visiblePanels = useMemo(
     () =>
@@ -559,8 +685,13 @@ export default function Home() {
           return next;
         });
       }
+
+      const panel = panels.find((p) => p.name === name);
+      if (panel) {
+        void record(panel, decision);
+      }
     },
-    [],
+    [panels, record],
   );
 
   const lockPanelScroll = useCallback(() => {
@@ -1135,6 +1266,7 @@ export default function Home() {
   const scoreHeightPercent = (activeScore / MAX_SCORE) * 100;
 
   return (
+
     <div className="relative bg-white h-screen overflow-hidden">
       <hr className="absolute border-gray-200 w-full top-[10vmin] left-0 -translate-y-1/2" />
 
@@ -1144,6 +1276,30 @@ export default function Home() {
       </div>
 
       <hr className="absolute border-gray-200 w-full bottom-[10vmin] left-0 translate-y-1/2" />
+
+      <div className={`fixed top-0 left-0 w-full h-full bg-black z-50 opacity-50 ${showLogs ? "block" : "hidden"}`}>
+      </div>
+
+      <div className={`fixed top-0 left-0 w-full h-full z-51 flex items-center justify-center ${showLogs ? "block" : "hidden"}`}>
+        <div className="bg-white rounded-md shadow-sm p-5 w-[35em]">
+          <div className="flex items-center justify-between"><p>Browswer Logs</p> <img src="/close.svg" className="w-3 h-3 cursor-pointer" onClick={() => setShowLogs(false)}></img></div>
+<p className="text-xs text-zinc-600">Blockchain Prototype</p>
+
+          <div className="flex flex-col gap-5 mt-5 max-h-[60vh] overflow-y-auto">
+            {logBlocks.length === 0 ? (
+              <p className="text-xs text-zinc-400">No decisions recorded yet.</p>
+            ) : (
+              [...logBlocks].reverse().map((block, i) => (
+                <div key={i} className="bg-black text-xs text-white p-2 rounded-md">
+                  <p>{block.timestamp}</p>
+                  <p className="mt-2 break-all">Hash: {block.hash}</p>
+                  <p className="mt-2 break-all">Encrypted JSON: {block.encryptedJson}</p>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
 
       <div className={`absolute inset-[10vmin] overflow-hidden flex items-center justify-center px-10 ${mode === "borrower" ? "" : "hidden"}`}> 
 
@@ -1298,7 +1454,7 @@ export default function Home() {
 
       <div className="absolute bottom-0 left-[10vmin] right-[10vmin] h-[10vmin] flex items-center px-5 justify-between items-center">
       <p onClick={() => setMode(mode === "lender" ? "borrower" : "lender")} className="select-none text-xs text-zinc-600 underline cursor-pointer">Switch to {mode === "lender" ? "Borrower" : "Lender"} Mode</p>
-      <p className="select-none text-xs text-zinc-600 underline cursor-pointer" >Open Logs</p>
+      <p onClick={() => setShowLogs(!showLogs)} className="select-none text-xs text-zinc-600 underline cursor-pointer" >Open Logs</p>
       </div>
       <div className="absolute border-l border-gray-200 h-full top-0 right-[10vmin] translate-x-1/2" />
     </div>
