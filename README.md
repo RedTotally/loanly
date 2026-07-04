@@ -66,18 +66,6 @@ Loanly turns the pre-loan journey into a fast, intuitive, personalized conversat
 - Timestamps and demo scenarios use **GMT+8** and HK-relevant use cases (e.g. property down payment, SME cash flow).
 - UI and copy are structured for **bilingual extension** (English + 中文) as a near-term deliverable.
 
-### 5. Demo — 2-minute end-to-end walkthrough
-
-| Step | Action | What judges see |
-|------|--------|-----------------|
-| 0:00 | Customer opens Loanly | Prompt UI — no static form |
-| 0:20 | Types need in natural language | e.g. *"I need $500,000 for a renovation, repay over 5 years"* |
-| 0:40 | AI returns structured plan | Konew-aligned product, amount, rate, repayment |
-| 1:00 | Customer confirms | Lead enters sales queue instantly |
-| 1:20 | Sales opens Lender mode | Full profile card with score and terms |
-| 1:40 | Sales accepts / logs decision | Activity log updated in real time |
-| 2:00 | Open Logs | Tamper-evident audit trail for compliance |
-
 ---
 
 ## How It Works
@@ -141,17 +129,6 @@ Accept / decline  →  SHA-256 hash chain  →  localStorage (loanly-audit-chain
 
 ---
 
-## Running Locally
+## Try It
 
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000).
-
-Create `.env.local`:
-
-```env
-OPENAI_API_KEY=your_key_here
-SYSTEM_PROMPT=   # optional — inject Konew product metadata and guardrails
-```
+**Live demo:** [https://loanly-six.vercel.app/](https://loanly-six.vercel.app/)

@@ -1280,7 +1280,7 @@ export default function Home() {
       <div className={`fixed top-0 left-0 w-full h-full bg-black z-50 opacity-50 ${showLogs ? "block" : "hidden"}`}>
       </div>
 
-      <div className={`fixed top-0 left-0 w-full h-full z-51 flex items-center justify-center ${showLogs ? "block" : "hidden"}`}>
+      <div className={`px-10 fixed top-0 left-0 w-full h-full z-51 flex items-center justify-center ${showLogs ? "block" : "hidden"}`}>
         <div className="bg-white rounded-md shadow-sm p-5 w-[35em]">
           <div className="flex items-center justify-between"><p>Browswer Logs</p> <img src="/close.svg" className="w-3 h-3 cursor-pointer" onClick={() => setShowLogs(false)}></img></div>
 <p className="text-xs text-zinc-600">Blockchain Prototype</p>
