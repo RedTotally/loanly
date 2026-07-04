@@ -5,28 +5,40 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 const PANELS = [
   {
     color: "bg-black",
-    score: 0,
+    score: 67,
     name: "Tommy",
     story:
       "I sell Beanie Babies online. My grandma thinks it's adorable — I think it's highly profitable. I've crunched the numbers in a scrapbook. I only need $5,000.",
-    short: "https://www.youtube.com/shorts/q1A4lX2l-Qo",
+    loan_product: "",
+    return: "",
+    money: 5000,
+    interest: 10,
+      short: "https://www.youtube.com/shorts/q1A4lX2l-Qo",
     status: "pending",
   },
   {
     color: "bg-black",
-    score: 25,
+    score: 55,
     name: "Sam",
     story:
       "My sister and I had a lemonade stand? We sold like a hundred cups in two days? I want to expand. All I need is $3,000?",
+      loan_product: "",
+    money: 3000,
+    return: "",
+    interest: 10,
     short: "https://www.youtube.com/shorts/DXwB3HLB3G8",
     status: "pending",
   },
   {
     color: "bg-black",
-    score: 50,
+    score: 99,
     name: "Sherry",
     story:
       "I love cell phones. I breathe cell phones. My brother's an idiot and he's selling them hand over fist. I need $8,500 for my own kiosk.",
+      loan_product: "",
+      money: 8500,
+    return: "",
+    interest: 10,
     short: "https://www.youtube.com/shorts/7RKeHBp0Avo",
     status: "pending",
   },
@@ -336,6 +348,8 @@ export default function Home() {
   const [panelStatuses, setPanelStatuses] = useState<Record<string, PanelStatus>>(
     () => Object.fromEntries(PANELS.map((panel) => [panel.name, panel.status])),
   );
+
+  const [mode, setMode] = useState<"lender" | "borrower">("borrower");
 
   const visiblePanels = useMemo(
     () =>
@@ -1048,7 +1062,35 @@ export default function Home() {
 
       <hr className="absolute border-gray-200 w-full bottom-[10vmin] left-0 translate-y-1/2" />
 
-      <div className="absolute inset-[10vmin] overflow-hidden">
+      <div className={`absolute inset-[10vmin] overflow-hidden flex items-center justify-center ${mode === "borrower" ? "" : "hidden"}`}> 
+
+        <div >
+
+          <div className="mb-10 bg-black text-white p-2 rounded-md">
+            <p className="text-xs">Loan Plan: </p>
+
+          <div className="mt-5">
+          <p>Loan Product: Personal Instalment Loans</p>
+          <p>Money: $100</p>
+          <p>Interest: 10%</p>
+          </div>
+
+          <div className="flex gap-2 mt-5">
+          <p className="text-sm w-full h-full rounded-md p-2 outline-none border-[.1em] shadow-sm  bg-white text-black text-center cursor-pointer">Submit</p>
+          <p className="text-sm w-full h-full rounded-md p-2 outline-none border-[.1em] shadow-sm bg-white text-black text-center cursor-pointer">Re-generate</p>
+        
+          </div>
+          </div>
+
+          <p className="text-sm">G'day <input className="border-b border-gray-200 outline-none" placeholder="Enter your name here..."></input>, what you need money for?</p>
+        <textarea className="text-sm w-full h-full border-gray-200 rounded-md p-2 outline-none border-[.1em] shadow-sm shadow-zinc-200 mt-5" placeholder="Enter your story here!"></textarea>
+       <input className="text-sm w-full h-full border-gray-200 rounded-md p-2 outline-none border-[.1em] shadow-sm shadow-zinc-200 mt-2" placeholder="YouTube Short URL"></input>
+        <p className="text-sm w-full h-full rounded-md p-2 outline-none border-[.1em] shadow-sm mt-10 bg-black text-white text-center cursor-pointer">Submit</p>
+        </div>
+        
+      </div>
+
+      <div className={`absolute inset-[10vmin] overflow-hidden ${mode === "lender" ? "" : "hidden"}`}> 
         <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 flex w-auto lg:w-[calc(30em+1em)]">
           <div
             ref={containerRef}
@@ -1162,7 +1204,8 @@ export default function Home() {
       <div className="absolute border-l border-gray-200 h-full top-0 left-[10vmin] -translate-x-1/2" />
 
       <div className="absolute bottom-0 left-[10vmin] right-[10vmin] h-[10vmin] flex items-center px-5 justify-between items-center">
-      <p className="text-xs text-zinc-600 underline cursor-pointer">Switch to Borrower Mode</p>
+      <p onClick={() => setMode(mode === "lender" ? "borrower" : "lender")} className="select-none text-xs text-zinc-600 underline cursor-pointer">Switch to {mode === "lender" ? "Borrower" : "Lender"} Mode</p>
+      <p className="select-none text-xs text-zinc-600 underline cursor-pointer" >Open Logs</p>
       </div>
       <div className="absolute border-l border-gray-200 h-full top-0 right-[10vmin] translate-x-1/2" />
     </div>

@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Loanly",
+  title: "Loanly | Best Place to Get a Loan",
   description: "Feeling Loanly? Find Your Sugar Daddies or Mommies.",
 };
 
