@@ -7,7 +7,7 @@ Tagline: Feeling Loanly? Find Your Sugar Daddies or Mommies.
 
 Loanly replaces Konew’s static lead form with an AI prompt-based interface. Customers describe their financial needs in natural language; the system understands intent, maps needs to Konew’s loan products, and delivers real-time Approval-in-Principle (AIP) options — then hands a clean summary to the sales team for follow-up.
 
-Our micro-loan flow takes inspiration from the film *Yes Man* — quick, low-friction approvals where lenders can say yes to small asks in the moment.
+Our micro-loan flow takes inspiration from the film *Yes Man* — quick, low-friction approvals where lenders can say yes to small asks in the moment. That matters because most drop-off happens **before** anyone picks up the phone: customers with modest, urgent needs (a bridge payment, a short-term cash gap) don’t want a multi-day callback loop for a few thousand dollars. Loanly front-loads the decision — AI structures the ask, the customer sees an AIP immediately, and sales can **accept or decline in one swipe** with full context already on the card. Fewer steps, faster yes/no, and a warmer handoff when the answer is yes.
 
 ---
 
