@@ -21,26 +21,26 @@ const INITIAL_PANELS: Panel[] = [
   {
     color: "bg-black",
     score: 67,
-    name: "Tommy",
+    name: "Alexey",
     story:
-      "I sell Beanie Babies online. My grandma thinks it's adorable — I think it's highly profitable. I've crunched the numbers in a scrapbook. I only need $5,000.",
-    loan_product: "",
-    return: "",
+      "I work at the Soviet Academy on an Electronika 60. I wrote a puzzle game — falling blocks, clear a line, keep stacking. My coworkers keep sneaking back to play it after hours. I call it Tetris. I need $5,000 for a real port, cartridges, and a chance to get it out of the lab.",
+    loan_product: "Game Development Loan",
+    return: "$550/month for 10 months from arcade licensing royalties",
     money: 5000,
-    interest: 10,
+    interest: 8,
     short: "https://www.youtube.com/shorts/q1A4lX2l-Qo",
     status: "pending",
   },
   {
     color: "bg-black",
     score: 55,
-    name: "Sam",
+    name: "Jesse",
     story:
-      "My sister and I had a lemonade stand? We sold like a hundred cups in two days? I want to expand. All I need is $3,000?",
-    loan_product: "",
+      "Yo, me and my partner cooked up something pure — best product in Albuquerque, straight science. We just need a bigger operation, better equipment, and a RV that doesn't break down every week. I'm asking for $3,000 to scale up. Bitch.",
+    loan_product: "Small Business Expansion Loan",
     money: 3000,
-    return: "",
-    interest: 10,
+    return: "$400/week for 9 weeks from wholesale distribution profits",
+    interest: 18,
     short: "https://www.youtube.com/shorts/DXwB3HLB3G8",
     status: "pending",
   },
@@ -49,11 +49,11 @@ const INITIAL_PANELS: Panel[] = [
     score: 99,
     name: "Sherry",
     story:
-      "I love cell phones. I breathe cell phones. My brother's an idiot and he's selling them hand over fist. I need $8,500 for my own kiosk.",
-    loan_product: "",
+      "I've been saving for years and finally found a small apartment in Taipei — good schools nearby, MRT five minutes away. The down payment is due next month and I'm $8,500 short after fees and renovation. I have stable income and just need a bridge loan to close.",
+    loan_product: "Overseas Property Down Payment Loan",
     money: 8500,
-    return: "",
-    interest: 10,
+    return: "$780/month for 12 months from salary and rental income",
+    interest: 12,
     short: "https://www.youtube.com/shorts/7RKeHBp0Avo",
     status: "pending",
   },
@@ -1263,6 +1263,10 @@ export default function Home() {
                   >
                     <p className="text-white text-2xl font-semibold">{panel.name}</p>
                     <p className="text-white text-sm mt-5">{panel.story}</p>
+                    <p className="text-white text-sm mt-5">Loan Product: {panel.loan_product}</p>
+                    <p className="text-white text-sm mt-5">Money: ${panel.money}</p>
+                    <p className="text-white text-sm mt-5">Interest: {panel.interest}%</p>
+                    <p className="text-white text-sm mt-5">Return: {panel.return}</p>
                   </div>
                 )}
               </section>
