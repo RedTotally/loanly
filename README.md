@@ -1,7 +1,5 @@
 # Loanly
 
-**Tagline:** *Reimagine loan origination as a conversation, not a form.*
-
 **SEA Hacks · Hong Kong · July 4–5, 2026**  
 **Industry Challenge:** KCash Limited (Konew FinTech Group)
 
