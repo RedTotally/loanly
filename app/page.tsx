@@ -2,7 +2,22 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-const PANELS = [
+type PanelStatus = "pending" | "accepted" | "declined";
+
+type Panel = {
+  color: string;
+  score: number;
+  name: string;
+  story: string;
+  loan_product: string;
+  return: string;
+  money: number;
+  interest: number;
+  short: string;
+  status: PanelStatus;
+};
+
+const INITIAL_PANELS: Panel[] = [
   {
     color: "bg-black",
     score: 67,
@@ -13,7 +28,7 @@ const PANELS = [
     return: "",
     money: 5000,
     interest: 10,
-      short: "https://www.youtube.com/shorts/q1A4lX2l-Qo",
+    short: "https://www.youtube.com/shorts/q1A4lX2l-Qo",
     status: "pending",
   },
   {
@@ -22,7 +37,7 @@ const PANELS = [
     name: "Sam",
     story:
       "My sister and I had a lemonade stand? We sold like a hundred cups in two days? I want to expand. All I need is $3,000?",
-      loan_product: "",
+    loan_product: "",
     money: 3000,
     return: "",
     interest: 10,
@@ -35,16 +50,19 @@ const PANELS = [
     name: "Sherry",
     story:
       "I love cell phones. I breathe cell phones. My brother's an idiot and he's selling them hand over fist. I need $8,500 for my own kiosk.",
-      loan_product: "",
-      money: 8500,
+    loan_product: "",
+    money: 8500,
     return: "",
     interest: 10,
     short: "https://www.youtube.com/shorts/7RKeHBp0Avo",
     status: "pending",
   },
-] as const;
+];
 
-type PanelStatus = "pending" | "accepted" | "declined";
+const parseAmount = (value: string) => {
+  const num = Number(value.replace(/[^0-9.]/g, ""));
+  return Number.isFinite(num) ? num : 0;
+};
 
 const MAX_SCORE = 100;
 const SCROLL_LOCK_MS = 400;
@@ -66,7 +84,7 @@ const wrapLogical = (index: number, count: number) =>
 const getYouTubeVideoId = (url: string) =>
   url.match(/(?:shorts\/|v=|youtu\.be\/)([\w-]+)/)?.[1];
 
-const getPanelShort = (panel: (typeof PANELS)[number]) =>
+const getPanelShort = (panel: Panel) =>
   "short" in panel ? panel.short : undefined;
 
 type YTPlayer = {
@@ -345,20 +363,21 @@ export default function Home() {
   const [accepted, setAccepted] = useState<Set<string>>(() => new Set());
   const [declined, setDeclined] = useState<Set<string>>(() => new Set());
   const [cardDrag, setCardDrag] = useState<CardDragState | null>(null);
+  const [panels, setPanels] = useState<Panel[]>(INITIAL_PANELS);
   const [panelStatuses, setPanelStatuses] = useState<Record<string, PanelStatus>>(
-    () => Object.fromEntries(PANELS.map((panel) => [panel.name, panel.status])),
+    () => Object.fromEntries(INITIAL_PANELS.map((panel) => [panel.name, panel.status])),
   );
 
   const [mode, setMode] = useState<"lender" | "borrower">("borrower");
 
   const visiblePanels = useMemo(
     () =>
-      PANELS.filter(
+      panels.filter(
         (panel) =>
           panelStatuses[panel.name] === "pending" ||
           (cardDrag?.name === panel.name && cardDrag.animating),
       ),
-    [panelStatuses, cardDrag],
+    [panelStatuses, cardDrag, panels],
   );
 
   const visibleCount = visiblePanels.length;
@@ -1047,6 +1066,70 @@ export default function Home() {
     }
   };
 
+  const [name, setName] = useState<string>("");
+  const [story, setStory] = useState<string>("");
+  const [shortUrl, setShortUrl] = useState<string>("");
+  const [planResponse, setPlanResponse] = useState<{
+    story: string;
+    loanProduct: string;
+    money: string;
+    interest: string;
+  } | null>(null);
+  const [planError, setPlanError] = useState("");
+
+  async function generateLoanPlan() {
+    setPlanError("");
+
+    if (!name.trim() || !story.trim() || !shortUrl.trim()) {
+      setPlanError("Please enter your name, story, and YouTube Short URL.");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/ai", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, story, youtubeUrl: shortUrl }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setPlanError(data.error ?? "Failed to generate loan plan.");
+        return;
+      }
+
+      setPlanResponse(data.plan);
+    } catch {
+      setPlanError("Something went wrong. Please try again.");
+    }
+  }
+
+  function submitLoanPlan() {
+    if (!planResponse) return;
+
+    const newPanel: Panel = {
+      color: "bg-black",
+      score: 50,
+      name: name.trim(),
+      story: planResponse.story,
+      loan_product: planResponse.loanProduct,
+      return: "",
+      money: parseAmount(String(planResponse.money)),
+      interest: parseAmount(String(planResponse.interest)),
+      short: shortUrl.trim(),
+      status: "pending",
+    };
+
+    setPanels((prev) => [...prev, newPanel]);
+    setPanelStatuses((prev) => ({ ...prev, [newPanel.name]: "pending" }));
+    setPlanResponse(null);
+    setPlanError("");
+    setMode("lender");
+  }
+
   const activePanel = visiblePanels[activeIndex];
   const activeScore = activePanel?.score ?? 0;
   const scoreHeightPercent = (activeScore / MAX_SCORE) * 100;
@@ -1062,30 +1145,36 @@ export default function Home() {
 
       <hr className="absolute border-gray-200 w-full bottom-[10vmin] left-0 translate-y-1/2" />
 
-      <div className={`absolute inset-[10vmin] overflow-hidden flex items-center justify-center ${mode === "borrower" ? "" : "hidden"}`}> 
+      <div className={`absolute inset-[10vmin] overflow-hidden flex items-center justify-center px-10 ${mode === "borrower" ? "" : "hidden"}`}> 
 
         <div >
 
-          <div className="mb-10 bg-black text-white p-2 rounded-md">
+          <div className={`mb-10 bg-black text-white p-2 rounded-md ${planResponse ? "" : "hidden"}`}>
             <p className="text-xs">Loan Plan: </p>
 
-          <div className="mt-5">
-          <p>Loan Product: Personal Instalment Loans</p>
-          <p>Money: $100</p>
-          <p>Interest: 10%</p>
+          <div className="mt-5 flex flex-col gap-2 text-xs">
+          <p className="lg:w-[30em]">Story: {planResponse?.story}</p> 
+          <p>Loan Product: {planResponse?.loanProduct}</p>
+          <p>Money: ${planResponse?.money}</p>
+          <p>Interest: {planResponse?.interest}%</p>
           </div>
 
           <div className="flex gap-2 mt-5">
-          <p className="text-sm w-full h-full rounded-md p-2 outline-none border-[.1em] shadow-sm  bg-white text-black text-center cursor-pointer">Submit</p>
-          <p className="text-sm w-full h-full rounded-md p-2 outline-none border-[.1em] shadow-sm bg-white text-black text-center cursor-pointer">Re-generate</p>
+          <p onClick={submitLoanPlan} className="text-sm w-full h-full rounded-md p-2 outline-none border-[.1em] shadow-sm  bg-white text-black text-center cursor-pointer">Submit</p>
+          <p onClick={generateLoanPlan} className="text-sm w-full h-full rounded-md p-2 outline-none border-[.1em] shadow-sm bg-white text-black text-center cursor-pointer">Re-generate</p>
         
           </div>
           </div>
 
-          <p className="text-sm">G'day <input className="border-b border-gray-200 outline-none" placeholder="Enter your name here..."></input>, what you need money for?</p>
-        <textarea className="text-sm w-full h-full border-gray-200 rounded-md p-2 outline-none border-[.1em] shadow-sm shadow-zinc-200 mt-5" placeholder="Enter your story here!"></textarea>
-       <input className="text-sm w-full h-full border-gray-200 rounded-md p-2 outline-none border-[.1em] shadow-sm shadow-zinc-200 mt-2" placeholder="YouTube Short URL"></input>
-        <p className="text-sm w-full h-full rounded-md p-2 outline-none border-[.1em] shadow-sm mt-10 bg-black text-white text-center cursor-pointer">Submit</p>
+          <p className="text-sm">G'day <input value={name} onChange={(e) => setName(e.target.value)} className="border-b border-gray-200 outline-none" placeholder="Enter your name here..."></input>, what you need money for?</p>
+        <textarea value={story} onChange={(e) => setStory(e.target.value)} className="text-sm w-full h-full border-gray-200 rounded-md p-2 outline-none border-[.1em] shadow-sm shadow-zinc-200 mt-5" placeholder="Enter your story here!"></textarea>
+       <input value={shortUrl} onChange={(e) => setShortUrl(e.target.value)} className="text-sm w-full h-full border-gray-200 rounded-md p-2 outline-none border-[.1em] shadow-sm shadow-zinc-200 mt-2" placeholder="YouTube Short URL"></input>
+       
+        <p onClick={generateLoanPlan} className="text-sm w-full h-full rounded-md p-2 outline-none border-[.1em] shadow-sm mt-10 bg-black text-white text-center cursor-pointer">Submit</p>
+        
+       {planError ? (
+         <p className="mt-5 text-red-500 text-xs text-center">{planError}</p>
+       ) : null}
         </div>
         
       </div>
