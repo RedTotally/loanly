@@ -1272,7 +1272,7 @@ export default function Home() {
 
       <div className="absolute top-0 left-[10vmin] right-[10vmin] h-[10vmin] flex items-center px-5 justify-between items-center">
         <img src="/loanly-logo.svg" alt="Logo" className="w-[10vmin] h-[10vmin]" />
-        <p className="text-xs text-zinc-600">Feeling Loanly? Find Your Sugar Daddies or Mommies.</p>
+        <p className="text-xs text-zinc-600 hidden lg:block ">Feeling Loanly? Find Your Sugar Daddies or Mommies.</p>
       </div>
 
       <hr className="absolute border-gray-200 w-full bottom-[10vmin] left-0 translate-y-1/2" />
