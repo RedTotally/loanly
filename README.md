@@ -1,5 +1,7 @@
 # Loanly
 
+Tagline: Feeling Loanly? Find Your Sugar Daddies or Mommies.
+
 **SEA Hacks · Hong Kong · July 4–5, 2026**  
 **Industry Challenge:** KCash Limited (Konew FinTech Group)
 
