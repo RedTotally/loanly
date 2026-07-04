@@ -460,7 +460,7 @@ export default function Home() {
   );
 
   const [mode, setMode] = useState<"lender" | "borrower">("borrower");
-  const [showLogs, setShowLogs] = useState(true);
+  const [showLogs, setShowLogs] = useState(false);
   const [logBlocks, setLogBlocks] = useState<AuditBlock[]>([]);
 
   useEffect(() => {
