@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 775 224.99">
+  <defs>
+    <style>
+      .cls-1, .cls-2 {
+        fill: #52525b;
+      }
+
+      .cls-2 {
+        font-family: Doto-Black, Doto;
+        font-size: 128.33px;
+        font-variation-settings: 'ROND' 0, 'wght' 900;
+        font-weight: 800;
+      }
+    </style>
+  </defs>
+  <g>
+    <polygon class="cls-1" points="112.79 112.79 112.79 0 0 0 0 224.99 112.79 224.99 225.58 224.99 225.58 112.79 112.79 112.79"/>
+    <rect class="cls-1" x="140.99" y="27.61" width="56.39" height="56.39"/>
+  </g>
+  <text class="cls-2" transform="translate(313 169.07)"><tspan x="0" y="0">Loanly</tspan></text>
+</svg>

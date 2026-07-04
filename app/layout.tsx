@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Roboto } from "next/font/google";
+import { Geist_Mono, Montserrat } from "next/font/google";
 import "./globals.css";
 
-const roboto = Roboto({
+const montserrat = Montserrat({
   weight: ["400", "500", "700"],
   subsets: ["latin"],
-  variable: "--font-roboto",
+  variable: "--font-montserrat",
 });
 
 const geistMono = Geist_Mono({
@@ -26,7 +26,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${roboto.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${montserrat.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
