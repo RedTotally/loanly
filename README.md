@@ -11,6 +11,29 @@ Our micro-loan flow takes inspiration from the film *Yes Man* — quick, low-fri
 
 ---
 
+## Note to Judges — We Can Also Bring YC to Hong Kong
+
+Loanly is built for Konew today, but the same product is a **general-purpose “find your sugar daddy or mommy” engine** — and that engine can bring **Y Combinator-style founder–investor matching to Hong Kong**.
+
+Hong Kong has world-class talent, capital, and density, but founders still apply through static forms, cold email, and slow callback loops. Partners and angels review hundreds of pitches with no structured queue, no instant signal, and no audit trail. Sound familiar? It is the same pre-engagement drop-off Konew faces — just with startups instead of borrowers.
+
+**The architecture already maps 1:1 to a YC-for-HK intake:**
+
+| Konew / Loanly today | YC-for-Hong Kong tomorrow |
+|----------------------|---------------------------|
+| **Borrower mode** — founder describes their need in plain language + optional YouTube pitch | **Application mode** — HK founders submit their story and demo reel the way YC applicants do |
+| **`POST /api/ai`** — GPT-4o-mini structures intent into a scannable card (product, amount, rate) | Same route, new **`SYSTEM_PROMPT`** — AI extracts team, market, traction, and ask into a partner-ready summary |
+| **Lender mode** — swipe right to accept, left to decline, one card at a time | **Partner mode** — batch partners, family offices, and angels review the queue at YC speed |
+| **Instant AIP** — applicant sees a concrete offer before any call | **Instant signal** — “interview invite” or “pass” in seconds, not weeks of inbox ping-pong |
+| **Activity log (SHA-256 hash chain)** — tamper-evident decision audit | Transparent batch decisions for accelerators, gov programs, and LP reporting |
+| **HK-ready** — GMT+8, Konew product guardrails, bilingual extension path | Same stack, localized for Cyberport, HKSTP, angel syndicates, and cross-border Greater Bay Area deals |
+
+Our demo feed already proves the pattern works beyond traditional lending: **Alexey** pitching a game port, **Jesse** scaling a product business, **Sherry** closing a cross-border property gap — these are founder stories, not form-field loan applications. Swap the system prompt from Konew catalog metadata to YC batch rubric, and Loanly becomes the intake layer Hong Kong has never had: **pitch in your own words, get structured instantly, get a yes or no in one swipe.**
+
+We are not asking judges to pick between fintech and startups. **This is one platform.** Konew wins on Day 1; Hong Kong’s founder ecosystem wins on Day 2 — without rewriting the app, only the prompt, product metadata, and partner queue.
+
+---
+
 ## The Problem
 
 Konew captures website leads through traditional forms. At first contact there is limited understanding of the customer’s actual needs, so follow-up calls become lengthy Q&A sessions — and leads drop off before any real-time offer is presented.
@@ -67,6 +90,7 @@ Loanly turns the pre-loan journey into a fast, intuitive, personalized conversat
 - Built for **Hong Kong licensed money lending** workflows (Konew / KCash / PayKool product families).
 - Timestamps and demo scenarios use **GMT+8** and HK-relevant use cases (e.g. property down payment, SME cash flow).
 - UI and copy are structured for **bilingual extension** (English + 中文) as a near-term deliverable.
+- **Same stack, second act:** configurable AI + swipe review can power **YC-style startup intake in Hong Kong** — see [Note to Judges](#note-to-judges--we-can-also-bring-yc-to-hong-kong) above.
 
 ---
 

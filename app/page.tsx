@@ -29,7 +29,7 @@ const INITIAL_PANELS: Panel[] = [
     return: "$550/month for 10 months from arcade licensing royalties",
     money: 5000,
     interest: 8,
-    short: "https://www.youtube.com/shorts/q1A4lX2l-Qo",
+    short: "https://www.youtube.com/shorts/B1giZ0AveC4",
     status: "pending",
   },
   {
@@ -41,7 +41,7 @@ const INITIAL_PANELS: Panel[] = [
     money: 3000,
     return: "$400/week for 9 weeks from wholesale distribution profits",
     interest: 18,
-    short: "https://www.youtube.com/shorts/DXwB3HLB3G8",
+    short: "https://www.youtube.com/watch?v=dkOpG3kqmy4",
     status: "pending",
   },
   {
@@ -53,7 +53,7 @@ const INITIAL_PANELS: Panel[] = [
     money: 8500,
     return: "$780/month for 12 months from salary and rental income",
     interest: 12,
-    short: "https://www.youtube.com/shorts/7RKeHBp0Avo",
+    short: "https://www.youtube.com/watch?v=Rzlr2tNSl0U",
     status: "pending",
   },
 ];
