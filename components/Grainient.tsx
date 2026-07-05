@@ -177,9 +177,13 @@ const Grainient: React.FC<GrainientProps> = ({
 
     const gl = renderer.gl;
     const canvas = gl.canvas as HTMLCanvasElement;
+    canvas.style.position = 'absolute';
+    canvas.style.inset = '0';
     canvas.style.width = '100%';
     canvas.style.height = '100%';
     canvas.style.display = 'block';
+    canvas.style.zIndex = '0';
+    canvas.style.pointerEvents = 'none';
     container.appendChild(canvas);
 
     const geometry = new Triangle(gl);

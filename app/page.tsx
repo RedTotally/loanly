@@ -1435,7 +1435,7 @@ export default function Home() {
               ×
             </button>
           </div>
-          <p className="mt-2 text-sm text-zinc-600">A sugar mommy just noticed your profile!</p>
+          <p className="mt-2 text-sm text-zinc-600">Someone just noticed your profile!</p>
         </div>
       )}
 
@@ -1506,7 +1506,7 @@ export default function Home() {
             onMouseDown={handleMouseDown}
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
-            className={`h-full w-[30em] shrink-0 overflow-y-auto bg-black touch-pan-y select-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${isDragging ? "cursor-grabbing" : "cursor-grab"}`}
+            className={`h-full w-[30em] shrink-0 overflow-y-auto bg-transparent touch-pan-y select-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${isDragging ? "cursor-grabbing" : "cursor-grab"}`}
           >
             {visibleCount === 0 ? (
               <div
@@ -1535,61 +1535,64 @@ export default function Home() {
                 className={`relative isolate shrink-0 overflow-hidden ${!showShort && videoId ? "cursor-pointer" : ""}`}
                 style={{ height: panelHeight || "100%" }}
               >
-                <Grainient className="absolute inset-0 z-0 pointer-events-none" />
-                {showShort && videoId && (
-                  <ShortVideoOverlay
-                    videoId={videoId}
-                    apiReady={youtubeApiReady}
-                    shouldPlay={isScrollSettled && index === activeIndex + 1}
-                    onPointerDown={(event) =>
-                      handleShortPointerDown(panel.name, event)
-                    }
-                    onPointerMove={(event) =>
-                      handleShortPointerMove(panel.name, event)
-                    }
-                    onPointerUp={(event) =>
-                      handleShortPointerUp(panel.name, event)
-                    }
-                    onPointerCancel={resetShortGesture}
-                    onScrubStart={lockPanelScroll}
-                    onScrubEnd={unlockPanelScroll}
-                  />
-                )}
-                {!showShort && (
-                  <div
-                    className={`relative z-10 h-full p-10${cardOffset ? " touch-none" : ""}`}
-                    style={{
-                      transform: cardOffset
-                        ? `translate(${cardOffset.x}px, ${cardOffset.y}px) rotate(${cardOffset.x * 0.04}deg)`
-                        : undefined,
-                      transition: cardOffset?.animating
-                        ? "transform 300ms ease-out"
-                        : undefined,
-                    }}
-                    onTransitionEnd={(event) =>
-                      handleCardTransitionEnd(panel.name, event)
-                    }
-                    onPointerDown={(event) =>
-                      handleStoryPointerDown(panel.name, event)
-                    }
-                    onPointerMove={(event) =>
-                      handleStoryPointerMove(panel.name, event)
-                    }
-                    onPointerUp={(event) =>
-                      handleStoryPointerUp(panel.name, event)
-                    }
-                    onPointerCancel={(event) =>
-                      handleStoryPointerCancel(panel.name, event)
-                    }
-                  >
-                    <p className="text-white text-2xl font-semibold">{panel.name}</p>
-                    <p className="text-white text-sm mt-5">{panel.story}</p>
-                    <p className="text-white text-sm mt-5">Loan Product: {panel.loan_product}</p>
-                    <p className="text-white text-sm mt-5">Money: ${panel.money}</p>
-                    <p className="text-white text-sm mt-5">Interest: {panel.interest}%</p>
-                    <p className="text-white text-sm mt-5">Return: {panel.return}</p>
-                  </div>
-                )}
+                <div className="absolute inset-0 z-0 pointer-events-none" aria-hidden>
+                  <Grainient className="h-full w-full" />
+                </div>
+                <div className="absolute inset-0 z-10">
+                  {showShort && videoId ? (
+                    <ShortVideoOverlay
+                      videoId={videoId}
+                      apiReady={youtubeApiReady}
+                      shouldPlay={isScrollSettled && index === activeIndex + 1}
+                      onPointerDown={(event) =>
+                        handleShortPointerDown(panel.name, event)
+                      }
+                      onPointerMove={(event) =>
+                        handleShortPointerMove(panel.name, event)
+                      }
+                      onPointerUp={(event) =>
+                        handleShortPointerUp(panel.name, event)
+                      }
+                      onPointerCancel={resetShortGesture}
+                      onScrubStart={lockPanelScroll}
+                      onScrubEnd={unlockPanelScroll}
+                    />
+                  ) : (
+                    <div
+                      className={`h-full p-10${cardOffset ? " touch-none" : ""}`}
+                      style={{
+                        transform: cardOffset
+                          ? `translate(${cardOffset.x}px, ${cardOffset.y}px) rotate(${cardOffset.x * 0.04}deg)`
+                          : undefined,
+                        transition: cardOffset?.animating
+                          ? "transform 300ms ease-out"
+                          : undefined,
+                      }}
+                      onTransitionEnd={(event) =>
+                        handleCardTransitionEnd(panel.name, event)
+                      }
+                      onPointerDown={(event) =>
+                        handleStoryPointerDown(panel.name, event)
+                      }
+                      onPointerMove={(event) =>
+                        handleStoryPointerMove(panel.name, event)
+                      }
+                      onPointerUp={(event) =>
+                        handleStoryPointerUp(panel.name, event)
+                      }
+                      onPointerCancel={(event) =>
+                        handleStoryPointerCancel(panel.name, event)
+                      }
+                    >
+                      <p className="text-white text-2xl font-semibold">{panel.name}</p>
+                      <p className="text-white text-sm mt-5">{panel.story}</p>
+                      <p className="text-white text-sm mt-5">Loan Product: {panel.loan_product}</p>
+                      <p className="text-white text-sm mt-5">Money: ${panel.money}</p>
+                      <p className="text-white text-sm mt-5">Interest: {panel.interest}%</p>
+                      <p className="text-white text-sm mt-5">Return: {panel.return}</p>
+                    </div>
+                  )}
+                </div>
               </section>
               );
             })
