@@ -1,12 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import Grainient from "@/components/Grainient";
+import LoanlyLogo from "@/components/LoanlyLogo";
 import TextPressure from "./TextPressure";
 
 type PanelStatus = "pending" | "accepted" | "declined";
 
 type Panel = {
-  color: string;
   score: number;
   name: string;
   story: string;
@@ -20,7 +22,6 @@ type Panel = {
 
 const INITIAL_PANELS: Panel[] = [
   {
-    color: "bg-black",
     score: 67,
     name: "Alexey",
     story:
@@ -33,7 +34,6 @@ const INITIAL_PANELS: Panel[] = [
     status: "pending",
   },
   {
-    color: "bg-black",
     score: 55,
     name: "Jesse",
     story:
@@ -46,7 +46,6 @@ const INITIAL_PANELS: Panel[] = [
     status: "pending",
   },
   {
-    color: "bg-black",
     score: 99,
     name: "Sherry",
     story:
@@ -82,7 +81,19 @@ type LoanDecisionPayload = {
   decision: "accepted" | "declined";
 };
 
+type SubmittedReel = {
+  name: string;
+  story: string;
+  loan_product: string;
+  return: string;
+  money: number;
+  interest: number;
+  short: string;
+  submittedAt?: string;
+};
+
 const STORAGE_KEY = "loanly-audit-chain";
+const SUBMITTED_REELS_KEY = "loanly-submitted-reels";
 const GENESIS_HASH = "0";
 const CAESAR_SHIFT = 13;
 
@@ -154,6 +165,39 @@ function saveAuditChain(blocks: AuditBlock[]): void {
   } catch {
     // ignore quota / private mode errors
   }
+}
+
+function loadSubmittedReels(): SubmittedReel[] {
+  try {
+    const raw = localStorage.getItem(SUBMITTED_REELS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveSubmittedReels(reels: SubmittedReel[]): void {
+  try {
+    localStorage.setItem(SUBMITTED_REELS_KEY, JSON.stringify(reels));
+  } catch {
+    // ignore quota / private mode errors
+  }
+}
+
+function submittedReelToPanel(reel: SubmittedReel): Panel {
+  return {
+    score: 50,
+    name: reel.name,
+    story: reel.story,
+    loan_product: reel.loan_product,
+    return: reel.return,
+    money: reel.money,
+    interest: reel.interest,
+    short: reel.short,
+    status: "pending",
+  };
 }
 
 const MAX_SCORE = 100;
@@ -462,10 +506,40 @@ export default function Home() {
 
   const [mode, setMode] = useState<"lender" | "borrower">("borrower");
   const [showLogs, setShowLogs] = useState(false);
+  const [showNotification, setShowNotification] = useState(false);
   const [logBlocks, setLogBlocks] = useState<AuditBlock[]>([]);
+  const [submittedShortUrls, setSubmittedShortUrls] = useState<Set<string>>(
+    () => new Set(),
+  );
 
   useEffect(() => {
     setLogBlocks(loadAuditChain());
+  }, []);
+
+  useEffect(() => {
+    const saved = loadSubmittedReels();
+    if (saved.length === 0) return;
+
+    setSubmittedShortUrls(new Set(saved.map((reel) => reel.short)));
+
+    const existingShorts = new Set(
+      INITIAL_PANELS.map((panel) => getPanelShort(panel)).filter(Boolean),
+    );
+    const toAdd = saved.filter((reel) => !existingShorts.has(reel.short));
+    if (toAdd.length === 0) return;
+
+    setPanels((prev) => {
+      const prevShorts = new Set(
+        prev.map((panel) => getPanelShort(panel)).filter(Boolean),
+      );
+      const stillToAdd = toAdd.filter((reel) => !prevShorts.has(reel.short));
+      if (stillToAdd.length === 0) return prev;
+      return [...prev, ...stillToAdd.map(submittedReelToPanel)];
+    });
+    setPanelStatuses((prev) => ({
+      ...prev,
+      ...Object.fromEntries(toAdd.map((reel) => [reel.name, "pending" as const])),
+    }));
   }, []);
 
   const record = useCallback(
@@ -640,17 +714,26 @@ export default function Home() {
     scrollToLogical(activeIndexRef.current - 1);
   }, [scrollToLogical]);
 
-  const toggleShort = useCallback((name: string) => {
-    setHiddenShorts((prev) => {
-      const next = new Set(prev);
-      if (next.has(name)) {
-        next.delete(name);
-      } else {
-        next.add(name);
+  const toggleShort = useCallback(
+    (name: string) => {
+      setHiddenShorts((prev) => {
+        const next = new Set(prev);
+        if (next.has(name)) {
+          next.delete(name);
+        } else {
+          next.add(name);
+        }
+        return next;
+      });
+
+      const panel = panels.find((p) => p.name === name);
+      const short = panel ? getPanelShort(panel) : undefined;
+      if (short && submittedShortUrls.has(short)) {
+        setShowNotification(true);
       }
-      return next;
-    });
-  }, []);
+    },
+    [panels, submittedShortUrls],
+  );
 
   const resetShortGesture = useCallback(() => {
     shortGestureRef.current = {
@@ -1242,8 +1325,8 @@ export default function Home() {
   function submitLoanPlan() {
     if (!planResponse) return;
 
+    const trimmedShort = shortUrl.trim();
     const newPanel: Panel = {
-      color: "bg-black",
       score: 50,
       name: name.trim(),
       story: planResponse.story,
@@ -1251,9 +1334,27 @@ export default function Home() {
       return: "",
       money: parseAmount(String(planResponse.money)),
       interest: parseAmount(String(planResponse.interest)),
-      short: shortUrl.trim(),
+      short: trimmedShort,
       status: "pending",
     };
+
+    const saved = loadSubmittedReels();
+    if (!saved.some((reel) => reel.short === trimmedShort)) {
+      saveSubmittedReels([
+        ...saved,
+        {
+          name: newPanel.name,
+          story: newPanel.story,
+          loan_product: newPanel.loan_product,
+          return: newPanel.return,
+          money: newPanel.money,
+          interest: newPanel.interest,
+          short: trimmedShort,
+          submittedAt: formatGmt8(new Date()),
+        },
+      ]);
+    }
+    setSubmittedShortUrls((prev) => new Set(prev).add(trimmedShort));
 
     setPanels((prev) => [...prev, newPanel]);
     setPanelStatuses((prev) => ({ ...prev, [newPanel.name]: "pending" }));
@@ -1273,11 +1374,13 @@ export default function Home() {
       <div className="absolute bottom-10 right-0 h-56 w-56 rounded-full bg-fuchsia-100/60 blur-3xl" />
       <hr className="absolute border-gray-200 w-full top-[10vmin] left-0 -translate-y-1/2" />
 
+
       <div className="absolute top-0 left-[10vmin] right-[10vmin] h-[10vmin] flex items-center justify-between px-4 sm:px-5">
         <div className="flex items-center">
           <img src="/loanly-logo.svg" alt="Loanly logo" className="h-10 w-auto [filter:brightness(0)_saturate(100%)]" />
         </div>
         <p className="hidden text-xs font-semibold text-zinc-600 lg:block">Feeling Loanly? Find your next opportunity.</p>
+
       </div>
 
       <hr className="absolute border-gray-200 w-full bottom-[10vmin] left-0 translate-y-1/2" />
@@ -1320,13 +1423,20 @@ export default function Home() {
         </div>
       </div>
 
-      <div className={`absolute inset-[10vmin] overflow-hidden flex items-center justify-center px-4 sm:px-6 lg:px-10 ${mode === "borrower" ? "" : "hidden"}`}> 
-
-        <div className="w-full max-w-3xl rounded-[32px] border border-zinc-200 bg-white/85 p-6 shadow-[0_25px_80px_-24px_rgba(17,24,39,0.25)] backdrop-blur xl:p-8">
-          <div className="mb-4 flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-black px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-white">Loanly AI</span>
-            <span className="text-sm text-zinc-600">Turn your story into a polished funding request.</span>
+      {showNotification && (
+        <div className="fixed bottom-10 right-10 z-[50] bg-white rounded-md shadow-sm p-5 w-[35em]">
+          <div className="flex items-center justify-between">
+            <p>Notification</p>
+            <img src="/close.svg" className="w-3 h-3 cursor-pointer" onClick={() => setShowNotification(false)} alt="" />
           </div>
+          <p className="text-xs text-zinc-600">A sugar mommy just noticed your profile!</p>
+        </div>
+      )}
+
+      <div className={`absolute inset-[10vmin] overflow-y-auto px-10 ${mode === "borrower" ? "" : "hidden"}`}> 
+
+        <div className="min-h-full flex flex-col justify-center py-10 mx-auto w-full max-w-[30em]">
+
 
           <div className={`mb-6 rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-black shadow-sm ${planResponse ? "" : "hidden"}`}>
             <p className="text-xs uppercase tracking-[0.24em] text-zinc-600">Loan Plan</p>
@@ -1359,6 +1469,7 @@ export default function Home() {
             />
           </div>
 
+
           <p className="text-sm text-zinc-700">G'day <input value={name} onChange={(e) => setName(e.target.value)} className="border-b border-zinc-300 bg-transparent px-1 pb-1 outline-none transition focus:border-black" placeholder="Enter your name here"></input>, what do you need money for?</p>
           <textarea value={story} onChange={(e) => setStory(e.target.value)} className="mt-5 h-32 w-full rounded-2xl border border-zinc-200 bg-zinc-50 p-3 text-sm outline-none shadow-sm transition focus:border-zinc-400 focus:bg-white" placeholder="Tell us your story..."></textarea>
           <input value={shortUrl} onChange={(e) => setShortUrl(e.target.value)} className="mt-3 w-full rounded-2xl border border-zinc-200 bg-zinc-50 p-3 text-sm outline-none shadow-sm transition focus:border-zinc-400 focus:bg-white" placeholder="Add a YouTube video about you"></input>
@@ -1368,6 +1479,7 @@ export default function Home() {
           {planError ? (
             <p className="mt-4 text-center text-xs text-red-500">{planError}</p>
           ) : null}
+
         </div>
         
       </div>
@@ -1412,9 +1524,10 @@ export default function Home() {
               <section
                 key={index}
                 data-panel-index={index}
-                className={`relative shrink-0 ${panel.color} ${!showShort && videoId ? "cursor-pointer" : ""}`}
+                className={`relative isolate shrink-0 overflow-hidden ${!showShort && videoId ? "cursor-pointer" : ""}`}
                 style={{ height: panelHeight || "100%" }}
               >
+                <Grainient className="absolute inset-0 z-0 pointer-events-none" />
                 {showShort && videoId && (
                   <ShortVideoOverlay
                     videoId={videoId}
