@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import TextPressure from "./TextPressure";
 
 type PanelStatus = "pending" | "accepted" | "declined";
 
@@ -1267,76 +1268,119 @@ export default function Home() {
 
   return (
 
-    <div className="relative bg-white h-screen overflow-hidden">
+    <div className="relative h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(82,39,255,0.12),_transparent_34%),linear-gradient(135deg,_#ffffff_0%,_#faf7ff_100%)]">
+      <div className="absolute -left-10 top-24 h-48 w-48 rounded-full bg-violet-200/50 blur-3xl" />
+      <div className="absolute bottom-10 right-0 h-56 w-56 rounded-full bg-fuchsia-100/60 blur-3xl" />
       <hr className="absolute border-gray-200 w-full top-[10vmin] left-0 -translate-y-1/2" />
 
-      <div className="absolute top-0 left-[10vmin] right-[10vmin] h-[10vmin] flex items-center px-5 justify-between items-center">
-        <img src="/loanly-logo.svg" alt="Logo" className="w-[10vmin] h-[10vmin]" />
-        <p className="text-xs text-zinc-600 hidden lg:block ">Feeling Loanly? Find Your Sugar Daddies or Mommies.</p>
+      <div className="absolute top-0 left-[10vmin] right-[10vmin] h-[10vmin] flex items-center justify-between px-4 sm:px-5">
+        <div className="flex items-center">
+          <img src="/loanly-logo.svg" alt="Loanly logo" className="h-10 w-auto [filter:brightness(0)_saturate(100%)]" />
+        </div>
+        <p className="hidden text-xs font-semibold text-zinc-600 lg:block">Feeling Loanly? Find your next opportunity.</p>
       </div>
 
       <hr className="absolute border-gray-200 w-full bottom-[10vmin] left-0 translate-y-1/2" />
 
-      <div className={`fixed top-0 left-0 w-full h-full bg-black z-50 opacity-50 ${showLogs ? "block" : "hidden"}`}>
-      </div>
+      <div className={`fixed inset-0 z-[60] ${showLogs ? "pointer-events-auto" : "pointer-events-none"}`}>
+        <div className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition ${showLogs ? "opacity-100" : "opacity-0"}`} />
+        <div className={`absolute inset-0 flex items-center justify-center p-4 transition ${showLogs ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+          <div className="w-full max-w-2xl rounded-[28px] border border-zinc-200 bg-white p-6 shadow-[0_30px_90px_-30px_rgba(0,0,0,0.45)]">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-lg font-semibold text-zinc-900">Audit Logs</p>
+                <p className="mt-1 text-sm text-zinc-500">Blockchain prototype of loan decisions</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowLogs(false)}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 text-zinc-600 transition hover:bg-zinc-100"
+                aria-label="Close logs"
+              >
+                ×
+              </button>
+            </div>
 
-      <div className={`px-10 fixed top-0 left-0 w-full h-full z-51 flex items-center justify-center ${showLogs ? "block" : "hidden"}`}>
-        <div className="bg-white rounded-md shadow-sm p-5 w-[35em]">
-          <div className="flex items-center justify-between"><p>Browswer Logs</p> <img src="/close.svg" className="w-3 h-3 cursor-pointer" onClick={() => setShowLogs(false)}></img></div>
-<p className="text-xs text-zinc-600">Blockchain Prototype</p>
-
-          <div className="flex flex-col gap-5 mt-5 max-h-[60vh] overflow-y-auto">
-            {logBlocks.length === 0 ? (
-              <p className="text-xs text-zinc-400">No decisions recorded yet.</p>
-            ) : (
-              [...logBlocks].reverse().map((block, i) => (
-                <div key={i} className="bg-black text-xs text-white p-2 rounded-md">
-                  <p>{block.timestamp}</p>
-                  <p className="mt-2 break-all">Hash: {block.hash}</p>
-                  <p className="mt-2 break-all">Encrypted JSON: {block.encryptedJson}</p>
+            <div className="mt-5 flex max-h-[60vh] flex-col gap-4 overflow-y-auto pr-1">
+              {logBlocks.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-6 text-center text-sm text-zinc-500">
+                  No decisions recorded yet.
                 </div>
-              ))
-            )}
+              ) : (
+                [...logBlocks].reverse().map((block, i) => (
+                  <div key={i} className="rounded-2xl border border-zinc-200 bg-zinc-950 p-4 text-sm text-white shadow-sm">
+                    <p className="text-xs uppercase tracking-[0.24em] text-zinc-400">{block.timestamp}</p>
+                    <p className="mt-3 break-all text-[11px] text-zinc-300">Hash: {block.hash}</p>
+                    <p className="mt-2 break-all text-[11px] text-zinc-300">Encrypted JSON: {block.encryptedJson}</p>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className={`absolute inset-[10vmin] overflow-hidden flex items-center justify-center px-10 ${mode === "borrower" ? "" : "hidden"}`}> 
+      <div className={`absolute inset-[10vmin] overflow-hidden flex items-center justify-center px-4 sm:px-6 lg:px-10 ${mode === "borrower" ? "" : "hidden"}`}> 
 
-        <div >
-
-          <div className={`mb-10 bg-black text-white p-2 rounded-md ${planResponse ? "" : "hidden"}`}>
-            <p className="text-xs">Loan Plan: </p>
-
-          <div className="mt-5 flex flex-col gap-2 text-xs">
-          <p className="lg:w-[30em]">Story: {planResponse?.story}</p> 
-          <p>Loan Product: {planResponse?.loanProduct}</p>
-          <p>Money: ${planResponse?.money}</p>
-          <p>Interest: {planResponse?.interest}%</p>
+        <div className="w-full max-w-3xl rounded-[32px] border border-zinc-200 bg-white/85 p-6 shadow-[0_25px_80px_-24px_rgba(17,24,39,0.25)] backdrop-blur xl:p-8">
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-black px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-white">Loanly AI</span>
+            <span className="text-sm text-zinc-600">Turn your story into a polished funding request.</span>
           </div>
 
-          <div className="flex gap-2 mt-5">
-          <p onClick={submitLoanPlan} className="text-sm w-full h-full rounded-md p-2 outline-none border-[.1em] shadow-sm  bg-white text-black text-center cursor-pointer">Submit</p>
-          <p onClick={generateLoanPlan} className="text-sm w-full h-full rounded-md p-2 outline-none border-[.1em] shadow-sm bg-white text-black text-center cursor-pointer">Re-generate</p>
-        
-          </div>
+          <div className={`mb-6 rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-black shadow-sm ${planResponse ? "" : "hidden"}`}>
+            <p className="text-xs uppercase tracking-[0.24em] text-zinc-600">Loan Plan</p>
+
+            <div className="mt-4 flex flex-col gap-2 text-sm text-zinc-900">
+              <p className="lg:w-[30em]">Story: {planResponse?.story}</p> 
+              <p>Loan Product: {planResponse?.loanProduct}</p>
+              <p>Money: ${planResponse?.money}</p>
+              <p>Interest: {planResponse?.interest}%</p>
+            </div>
+
+            <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+              <p onClick={submitLoanPlan} className="w-full cursor-pointer rounded-xl border border-white/20 bg-white px-3 py-2 text-center text-sm font-medium text-black shadow-sm transition duration-200 hover:bg-black hover:text-white hover:-translate-y-0.5">Submit</p>
+              <p onClick={generateLoanPlan} className="w-full cursor-pointer rounded-xl border border-white/20 bg-zinc-800 px-3 py-2 text-center text-sm font-medium text-white shadow-sm transition duration-200 hover:-translate-y-0.5">Re-generate</p>
+            </div>
           </div>
 
-          <p className="text-sm">G'day <input value={name} onChange={(e) => setName(e.target.value)} className="border-b border-gray-200 outline-none" placeholder="Enter your name here..."></input>, what you need money for?</p>
-        <textarea value={story} onChange={(e) => setStory(e.target.value)} className="text-sm w-full h-full border-gray-200 rounded-md p-2 outline-none border-[.1em] shadow-sm shadow-zinc-200 mt-5" placeholder="Enter your story here!"></textarea>
-       <input value={shortUrl} onChange={(e) => setShortUrl(e.target.value)} className="text-sm w-full h-full border-gray-200 rounded-md p-2 outline-none border-[.1em] shadow-sm shadow-zinc-200 mt-2" placeholder="YouTube Short URL"></input>
-       
-        <p onClick={generateLoanPlan} className="text-sm w-full h-full rounded-md p-2 outline-none border-[.1em] shadow-sm mt-10 bg-black text-white text-center cursor-pointer">Submit</p>
-        
-       {planError ? (
-         <p className="mt-5 text-red-500 text-xs text-center">{planError}</p>
-       ) : null}
+          <div className="mb-6">
+            <TextPressure
+              text="WELCOME TO LOANLY"
+              flex
+              alpha={false}
+              stroke={false}
+              width
+              weight
+              italic
+              textColor="black"
+              strokeColor="#5227FF"
+              minFontSize={28}
+            />
+          </div>
+
+          <p className="text-sm text-zinc-700">G'day <input value={name} onChange={(e) => setName(e.target.value)} className="border-b border-zinc-300 bg-transparent px-1 pb-1 outline-none transition focus:border-black" placeholder="Enter your name here"></input>, what do you need money for?</p>
+          <textarea value={story} onChange={(e) => setStory(e.target.value)} className="mt-5 h-32 w-full rounded-2xl border border-zinc-200 bg-zinc-50 p-3 text-sm outline-none shadow-sm transition focus:border-zinc-400 focus:bg-white" placeholder="Tell us your story..."></textarea>
+          <input value={shortUrl} onChange={(e) => setShortUrl(e.target.value)} className="mt-3 w-full rounded-2xl border border-zinc-200 bg-zinc-50 p-3 text-sm outline-none shadow-sm transition focus:border-zinc-400 focus:bg-white" placeholder="Add a YouTube video about you"></input>
+          
+          <p onClick={generateLoanPlan} className="mt-6 w-full cursor-pointer rounded-2xl bg-black px-4 py-3 text-center text-sm font-medium text-white shadow-lg shadow-zinc-300 transition hover:-translate-y-0.5">Generate loan plan</p>
+          
+          {planError ? (
+            <p className="mt-4 text-center text-xs text-red-500">{planError}</p>
+          ) : null}
         </div>
         
       </div>
 
       <div className={`absolute inset-[10vmin] overflow-hidden ${mode === "lender" ? "" : "hidden"}`}> 
         <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 flex w-auto lg:w-[calc(30em+1em)]">
+          <section className="shrink-0 bg-black w-[.2em] self-stretch flex flex-col justify-end">
+            <div
+              className="bg-red-500 w-full transition-[height] duration-300"
+              style={{ height: `${scoreHeightPercent}%` }}
+            />
+          </section>
+
           <div
             ref={containerRef}
             onMouseDown={handleMouseDown}
@@ -1452,9 +1496,21 @@ export default function Home() {
 
       <div className="absolute border-l border-gray-200 h-full top-0 left-[10vmin] -translate-x-1/2" />
 
-      <div className="absolute bottom-0 left-[10vmin] right-[10vmin] h-[10vmin] flex items-center px-5 justify-between items-center">
-      <p onClick={() => setMode(mode === "lender" ? "borrower" : "lender")} className="select-none text-xs text-zinc-600 underline cursor-pointer">Switch to {mode === "lender" ? "Borrower" : "Lender"} Mode</p>
-      <p onClick={() => setShowLogs(!showLogs)} className="select-none text-xs text-zinc-600 underline cursor-pointer" >Open Logs</p>
+      <div className="absolute bottom-0 left-[10vmin] right-[10vmin] z-40 flex h-[10vmin] items-center justify-between px-4 sm:px-5">
+        <button
+          type="button"
+          onClick={() => setMode(mode === "lender" ? "borrower" : "lender")}
+          className="rounded-full bg-white px-5 py-3 text-sm font-semibold text-black shadow-[0_18px_50px_-30px_rgba(0,0,0,0.8)] transition duration-200 hover:bg-black hover:text-white hover:-translate-y-1 hover:scale-[1.02]"
+        >
+          Switch to {mode === "lender" ? "Borrower" : "Lender"} Mode
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowLogs(!showLogs)}
+          className="rounded-full bg-white px-5 py-3 text-sm font-semibold text-black shadow-[0_18px_50px_-30px_rgba(0,0,0,0.8)] transition duration-200 hover:bg-black hover:text-white hover:-translate-y-1 hover:scale-[1.02]"
+        >
+          {showLogs ? "Close Logs" : "Open Logs"}
+        </button>
       </div>
       <div className="absolute border-l border-gray-200 h-full top-0 right-[10vmin] translate-x-1/2" />
     </div>
