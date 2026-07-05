@@ -1558,39 +1558,56 @@ export default function Home() {
                       onScrubEnd={unlockPanelScroll}
                     />
                   ) : (
-                    <div
-                      className={`h-full p-10${cardOffset ? " touch-none" : ""}`}
-                      style={{
-                        transform: cardOffset
-                          ? `translate(${cardOffset.x}px, ${cardOffset.y}px) rotate(${cardOffset.x * 0.04}deg)`
-                          : undefined,
-                        transition: cardOffset?.animating
-                          ? "transform 300ms ease-out"
-                          : undefined,
-                      }}
-                      onTransitionEnd={(event) =>
-                        handleCardTransitionEnd(panel.name, event)
-                      }
-                      onPointerDown={(event) =>
-                        handleStoryPointerDown(panel.name, event)
-                      }
-                      onPointerMove={(event) =>
-                        handleStoryPointerMove(panel.name, event)
-                      }
-                      onPointerUp={(event) =>
-                        handleStoryPointerUp(panel.name, event)
-                      }
-                      onPointerCancel={(event) =>
-                        handleStoryPointerCancel(panel.name, event)
-                      }
-                    >
-                      <p className="text-white text-2xl font-semibold">{panel.name}</p>
-                      <p className="text-white text-sm mt-5">{panel.story}</p>
-                      <p className="text-white text-sm mt-5">Loan Product: {panel.loan_product}</p>
-                      <p className="text-white text-sm mt-5">Money: ${panel.money}</p>
-                      <p className="text-white text-sm mt-5">Interest: {panel.interest}%</p>
-                      <p className="text-white text-sm mt-5">Return: {panel.return}</p>
-                    </div>
+                    <>
+                      {cardOffset && (
+                        <div
+                          className={`pointer-events-none absolute inset-0 z-20 flex items-center ${cardOffset.x > 0 ? "justify-end" : "justify-start"} px-6`}
+                        >
+                          <div
+                            className={`rounded-full border px-4 py-2 text-sm font-semibold uppercase tracking-[0.28em] backdrop-blur ${
+                              cardOffset.x > 0
+                                ? "border-emerald-300/70 bg-emerald-400/20 text-emerald-200"
+                                : "border-rose-300/70 bg-rose-400/20 text-rose-200"
+                            }`}
+                          >
+                            {cardOffset.x > 0 ? "Accept" : "Reject"}
+                          </div>
+                        </div>
+                      )}
+                      <div
+                        className={`h-full p-10${cardOffset ? " touch-none" : ""}`}
+                        style={{
+                          transform: cardOffset
+                            ? `translate(${cardOffset.x}px, ${cardOffset.y}px) rotate(${cardOffset.x * 0.04}deg)`
+                            : undefined,
+                          transition: cardOffset?.animating
+                            ? "transform 300ms ease-out"
+                            : undefined,
+                        }}
+                        onTransitionEnd={(event) =>
+                          handleCardTransitionEnd(panel.name, event)
+                        }
+                        onPointerDown={(event) =>
+                          handleStoryPointerDown(panel.name, event)
+                        }
+                        onPointerMove={(event) =>
+                          handleStoryPointerMove(panel.name, event)
+                        }
+                        onPointerUp={(event) =>
+                          handleStoryPointerUp(panel.name, event)
+                        }
+                        onPointerCancel={(event) =>
+                          handleStoryPointerCancel(panel.name, event)
+                        }
+                      >
+                        <p className="text-white text-2xl font-semibold">{panel.name}</p>
+                        <p className="text-white text-sm mt-5">{panel.story}</p>
+                        <p className="text-white text-sm mt-5">Loan Product: {panel.loan_product}</p>
+                        <p className="text-white text-sm mt-5">Money: ${panel.money}</p>
+                        <p className="text-white text-sm mt-5">Interest: {panel.interest}%</p>
+                        <p className="text-white text-sm mt-5">Return: {panel.return}</p>
+                      </div>
+                    </>
                   )}
                 </div>
               </section>
