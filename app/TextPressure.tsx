@@ -13,6 +13,7 @@ type TextPressureProps = {
   textColor?: string;
   strokeColor?: string;
   minFontSize?: number;
+  centered?: boolean;
 };
 
 export default function TextPressure({
@@ -26,6 +27,7 @@ export default function TextPressure({
   textColor = "#111111",
   strokeColor = "#5227FF",
   minFontSize = 36,
+  centered = true,
 }: TextPressureProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [pointer, setPointer] = useState({ x: 0, y: 0 });
@@ -64,7 +66,7 @@ export default function TextPressure({
       className="w-full select-none"
       style={{ fontFamily: "Montserrat, Arial, sans-serif" }}
     >
-      <div className={`flex ${flex ? "flex-wrap" : "flex-wrap"} items-center justify-center gap-x-1 md:gap-x-2`}>
+      <div className={`flex ${flex ? "flex-wrap" : "flex-wrap"} items-center ${centered ? "justify-center" : "justify-start"} gap-x-1 md:gap-x-2`}>
         {letters.map((letter, index) => {
           const isSpace = letter === " ";
           const isActive = activeIndex === index;

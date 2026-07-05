@@ -1,11 +1,16 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Montserrat } from "next/font/google";
+import { Doto, Geist_Mono, Montserrat } from "next/font/google";
 import "./globals.css";
 
 const montserrat = Montserrat({
   weight: ["400", "500", "700"],
   subsets: ["latin"],
   variable: "--font-montserrat",
+});
+
+const doto = Doto({
+  subsets: ["latin"],
+  variable: "--font-doto",
 });
 
 const geistMono = Geist_Mono({
@@ -26,7 +31,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${montserrat.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${montserrat.variable} ${doto.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
