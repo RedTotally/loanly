@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Grainient from "@/components/Grainient";
+import LoanlyLogo from "@/components/LoanlyLogo";
 
 type PanelStatus = "pending" | "accepted" | "declined";
 
@@ -78,7 +79,19 @@ type LoanDecisionPayload = {
   decision: "accepted" | "declined";
 };
 
+type SubmittedReel = {
+  name: string;
+  story: string;
+  loan_product: string;
+  return: string;
+  money: number;
+  interest: number;
+  short: string;
+  submittedAt?: string;
+};
+
 const STORAGE_KEY = "loanly-audit-chain";
+const SUBMITTED_REELS_KEY = "loanly-submitted-reels";
 const GENESIS_HASH = "0";
 const CAESAR_SHIFT = 13;
 
@@ -150,6 +163,39 @@ function saveAuditChain(blocks: AuditBlock[]): void {
   } catch {
     // ignore quota / private mode errors
   }
+}
+
+function loadSubmittedReels(): SubmittedReel[] {
+  try {
+    const raw = localStorage.getItem(SUBMITTED_REELS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveSubmittedReels(reels: SubmittedReel[]): void {
+  try {
+    localStorage.setItem(SUBMITTED_REELS_KEY, JSON.stringify(reels));
+  } catch {
+    // ignore quota / private mode errors
+  }
+}
+
+function submittedReelToPanel(reel: SubmittedReel): Panel {
+  return {
+    score: 50,
+    name: reel.name,
+    story: reel.story,
+    loan_product: reel.loan_product,
+    return: reel.return,
+    money: reel.money,
+    interest: reel.interest,
+    short: reel.short,
+    status: "pending",
+  };
 }
 
 const MAX_SCORE = 100;
@@ -458,10 +504,40 @@ export default function Home() {
 
   const [mode, setMode] = useState<"lender" | "borrower">("borrower");
   const [showLogs, setShowLogs] = useState(false);
+  const [showNotification, setShowNotification] = useState(false);
   const [logBlocks, setLogBlocks] = useState<AuditBlock[]>([]);
+  const [submittedShortUrls, setSubmittedShortUrls] = useState<Set<string>>(
+    () => new Set(),
+  );
 
   useEffect(() => {
     setLogBlocks(loadAuditChain());
+  }, []);
+
+  useEffect(() => {
+    const saved = loadSubmittedReels();
+    if (saved.length === 0) return;
+
+    setSubmittedShortUrls(new Set(saved.map((reel) => reel.short)));
+
+    const existingShorts = new Set(
+      INITIAL_PANELS.map((panel) => getPanelShort(panel)).filter(Boolean),
+    );
+    const toAdd = saved.filter((reel) => !existingShorts.has(reel.short));
+    if (toAdd.length === 0) return;
+
+    setPanels((prev) => {
+      const prevShorts = new Set(
+        prev.map((panel) => getPanelShort(panel)).filter(Boolean),
+      );
+      const stillToAdd = toAdd.filter((reel) => !prevShorts.has(reel.short));
+      if (stillToAdd.length === 0) return prev;
+      return [...prev, ...stillToAdd.map(submittedReelToPanel)];
+    });
+    setPanelStatuses((prev) => ({
+      ...prev,
+      ...Object.fromEntries(toAdd.map((reel) => [reel.name, "pending" as const])),
+    }));
   }, []);
 
   const record = useCallback(
@@ -636,17 +712,26 @@ export default function Home() {
     scrollToLogical(activeIndexRef.current - 1);
   }, [scrollToLogical]);
 
-  const toggleShort = useCallback((name: string) => {
-    setHiddenShorts((prev) => {
-      const next = new Set(prev);
-      if (next.has(name)) {
-        next.delete(name);
-      } else {
-        next.add(name);
+  const toggleShort = useCallback(
+    (name: string) => {
+      setHiddenShorts((prev) => {
+        const next = new Set(prev);
+        if (next.has(name)) {
+          next.delete(name);
+        } else {
+          next.add(name);
+        }
+        return next;
+      });
+
+      const panel = panels.find((p) => p.name === name);
+      const short = panel ? getPanelShort(panel) : undefined;
+      if (short && submittedShortUrls.has(short)) {
+        setShowNotification(true);
       }
-      return next;
-    });
-  }, []);
+    },
+    [panels, submittedShortUrls],
+  );
 
   const resetShortGesture = useCallback(() => {
     shortGestureRef.current = {
@@ -1238,6 +1323,7 @@ export default function Home() {
   function submitLoanPlan() {
     if (!planResponse) return;
 
+    const trimmedShort = shortUrl.trim();
     const newPanel: Panel = {
       score: 50,
       name: name.trim(),
@@ -1246,9 +1332,27 @@ export default function Home() {
       return: "",
       money: parseAmount(String(planResponse.money)),
       interest: parseAmount(String(planResponse.interest)),
-      short: shortUrl.trim(),
+      short: trimmedShort,
       status: "pending",
     };
+
+    const saved = loadSubmittedReels();
+    if (!saved.some((reel) => reel.short === trimmedShort)) {
+      saveSubmittedReels([
+        ...saved,
+        {
+          name: newPanel.name,
+          story: newPanel.story,
+          loan_product: newPanel.loan_product,
+          return: newPanel.return,
+          money: newPanel.money,
+          interest: newPanel.interest,
+          short: trimmedShort,
+          submittedAt: formatGmt8(new Date()),
+        },
+      ]);
+    }
+    setSubmittedShortUrls((prev) => new Set(prev).add(trimmedShort));
 
     setPanels((prev) => [...prev, newPanel]);
     setPanelStatuses((prev) => ({ ...prev, [newPanel.name]: "pending" }));
@@ -1267,7 +1371,7 @@ export default function Home() {
       <hr className="absolute border-gray-200 w-full top-[10vmin] left-0 -translate-y-1/2" />
 
       <div className="absolute top-0 left-[10vmin] right-[10vmin] h-[10vmin] flex items-center px-5 justify-between items-center">
-        <img src="/loanly-logo.svg" alt="Logo" className="w-[10vmin] h-[10vmin]" />
+        <LoanlyLogo className="w-[10vmin] h-[10vmin]" />
         <p className="text-xs text-zinc-600 hidden lg:block ">Feeling Loanly? Find Your Sugar Daddies or Mommies.</p>
       </div>
 
@@ -1296,6 +1400,16 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {showNotification && (
+        <div className="fixed bottom-10 right-10 z-[50] bg-white rounded-md shadow-sm p-5 w-[35em]">
+          <div className="flex items-center justify-between">
+            <p>Notification</p>
+            <img src="/close.svg" className="w-3 h-3 cursor-pointer" onClick={() => setShowNotification(false)} alt="" />
+          </div>
+          <p className="text-xs text-zinc-600">A sugar mommy just noticed your profile!</p>
+        </div>
+      )}
 
       <div className={`absolute inset-[10vmin] overflow-y-auto px-10 ${mode === "borrower" ? "" : "hidden"}`}> 
 
