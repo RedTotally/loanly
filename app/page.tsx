@@ -1146,7 +1146,8 @@ export default function Home() {
     if (!container) return;
 
     const syncIndex = () => {
-      if (isAnimatingRef.current || isDraggingRef.current) return;
+      if (isDraggingRef.current) return;
+      isAnimatingRef.current = false;
       normalizeScrollPosition();
       updateScrollSettled();
     };
@@ -1200,18 +1201,13 @@ export default function Home() {
 
       container.style.scrollBehavior = "";
       const scrollDelta = container.scrollTop - dragStartScrollTopRef.current;
+      const startPhysical = Math.round(dragStartScrollTopRef.current / height);
 
-      if (Math.abs(scrollDelta) >= SWIPE_THRESHOLD_PX) {
-        if (scrollDelta > 0) {
-          goToNextPanel();
-        } else {
-          goToPrevPanel();
-        }
-        return;
+      if (Math.abs(scrollDelta) < SWIPE_THRESHOLD_PX) {
+        snapToPhysical(startPhysical);
+      } else {
+        snapToPhysical(Math.round(container.scrollTop / height));
       }
-
-      const physical = Math.round(container.scrollTop / height);
-      snapToPhysical(physical);
     };
 
     window.addEventListener("mousemove", handleMouseMove);
@@ -1221,7 +1217,7 @@ export default function Home() {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [goToNextPanel, goToPrevPanel, snapToPhysical, updateScrollSettled]);
+  }, [snapToPhysical, updateScrollSettled]);
 
   const handleMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
     if (
