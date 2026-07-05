@@ -201,6 +201,8 @@ function submittedReelToPanel(reel: SubmittedReel): Panel {
 
 const MAX_SCORE = 100;
 const SCROLL_LOCK_MS = 400;
+const WHEEL_THRESHOLD_PX = 80;
+const WHEEL_GESTURE_IDLE_MS = 150;
 const SWIPE_THRESHOLD_PX = 50;
 const THROW_DISTANCE_PX = 100;
 const THROW_VELOCITY_PX_MS = 0.6;
@@ -468,6 +470,9 @@ export default function Home() {
   }>({ name: null, x: 0, y: 0, dragged: false, axis: "none" });
   const isProgressScrubbingRef = useRef(false);
   const isCardDraggingRef = useRef(false);
+  const wheelAccumRef = useRef(0);
+  const wheelGestureLockedRef = useRef(false);
+  const wheelIdleTimerRef = useRef<number | null>(null);
   const storyGestureRef = useRef<{
     name: string | null;
     x: number;
@@ -1119,17 +1124,49 @@ export default function Home() {
     const container = containerRef.current;
     if (!container) return;
 
+    const getWheelDeltaPx = (event: WheelEvent) => {
+      if (event.deltaMode === 1) return event.deltaY * 16;
+      if (event.deltaMode === 2) return event.deltaY * container.clientHeight;
+      return event.deltaY;
+    };
+
+    const resetWheelGesture = () => {
+      wheelAccumRef.current = 0;
+      wheelGestureLockedRef.current = false;
+      wheelIdleTimerRef.current = null;
+    };
+
+    const scheduleWheelGestureEnd = () => {
+      if (wheelIdleTimerRef.current !== null) {
+        window.clearTimeout(wheelIdleTimerRef.current);
+      }
+      wheelIdleTimerRef.current = window.setTimeout(
+        resetWheelGesture,
+        WHEEL_GESTURE_IDLE_MS,
+      );
+    };
+
     const handleWheel = (event: WheelEvent) => {
       if (isProgressScrubbingRef.current || isCardDraggingRef.current) {
         return;
       }
 
       event.preventDefault();
-      if (isAnimatingRef.current) return;
+      scheduleWheelGestureEnd();
 
-      if (event.deltaY > 0) {
+      if (isAnimatingRef.current || wheelGestureLockedRef.current) return;
+
+      wheelAccumRef.current += getWheelDeltaPx(event);
+
+      if (Math.abs(wheelAccumRef.current) < WHEEL_THRESHOLD_PX) return;
+
+      const direction = wheelAccumRef.current;
+      wheelAccumRef.current = 0;
+      wheelGestureLockedRef.current = true;
+
+      if (direction > 0) {
         goToNextPanel();
-      } else if (event.deltaY < 0) {
+      } else {
         goToPrevPanel();
       }
     };
@@ -1138,6 +1175,9 @@ export default function Home() {
 
     return () => {
       container.removeEventListener("wheel", handleWheel);
+      if (wheelIdleTimerRef.current !== null) {
+        window.clearTimeout(wheelIdleTimerRef.current);
+      }
     };
   }, [goToNextPanel, goToPrevPanel]);
 
