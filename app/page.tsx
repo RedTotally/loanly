@@ -205,6 +205,8 @@ const SWIPE_THRESHOLD_PX = 50;
 const THROW_DISTANCE_PX = 100;
 const THROW_VELOCITY_PX_MS = 0.6;
 const SCROLL_SNAP_EPSILON_PX = 2;
+const BAR_WIDTH_EM = 0.2;
+const BAR_MAX_WIDTH_EM = 1.5;
 
 type CardDragState = {
   name: string;
@@ -1366,6 +1368,25 @@ export default function Home() {
   const activeScore = activePanel?.score ?? 0;
   const scoreHeightPercent = (activeScore / MAX_SCORE) * 100;
 
+  const activeCardDrag =
+    cardDrag && activePanel && cardDrag.name === activePanel.name
+      ? cardDrag
+      : null;
+  const isLiveCardDrag = Boolean(activeCardDrag && !activeCardDrag.animating);
+  const swipeThickness = activeCardDrag
+    ? activeCardDrag.animating
+      ? 1
+      : Math.min(Math.abs(activeCardDrag.x) / THROW_DISTANCE_PX, 1)
+    : 0;
+  const redBarWidthEm =
+    activeCardDrag && activeCardDrag.x < 0
+      ? BAR_WIDTH_EM + swipeThickness * (BAR_MAX_WIDTH_EM - BAR_WIDTH_EM)
+      : BAR_WIDTH_EM;
+  const greenBarWidthEm =
+    activeCardDrag && activeCardDrag.x > 0
+      ? BAR_WIDTH_EM + swipeThickness * (BAR_MAX_WIDTH_EM - BAR_WIDTH_EM)
+      : BAR_WIDTH_EM;
+
   return (
 
     <div className="relative h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(82,39,255,0.12),_transparent_34%),linear-gradient(135deg,_#ffffff_0%,_#faf7ff_100%)]">
@@ -1494,7 +1515,10 @@ export default function Home() {
 
       <div className={`absolute inset-[10vmin] overflow-hidden ${mode === "lender" ? "" : "hidden"}`}> 
         <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 flex w-auto lg:w-[calc(30em+1em)]">
-          <section className="shrink-0 bg-black w-[.2em] self-stretch flex flex-col justify-end">
+          <section
+            className={`shrink-0 bg-black self-stretch flex flex-col justify-end ${isLiveCardDrag && (activeCardDrag?.x ?? 0) < 0 ? "" : "transition-[width] duration-300"}`}
+            style={{ width: `${redBarWidthEm}em` }}
+          >
             <div
               className="bg-red-500 w-full transition-[height] duration-300"
               style={{ height: `${scoreHeightPercent}%` }}
@@ -1616,7 +1640,10 @@ export default function Home() {
             )}
           </div>
 
-          <section className="shrink-0 bg-black w-[.2em] self-stretch flex flex-col justify-end">
+          <section
+            className={`shrink-0 bg-black self-stretch flex flex-col justify-end ${isLiveCardDrag && (activeCardDrag?.x ?? 0) > 0 ? "" : "transition-[width] duration-300"}`}
+            style={{ width: `${greenBarWidthEm}em` }}
+          >
             <div
               className="bg-green-500 w-full transition-[height] duration-300"
               style={{ height: `${scoreHeightPercent}%` }}
