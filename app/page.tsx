@@ -1,11 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Grainient from "@/components/Grainient";
 
 type PanelStatus = "pending" | "accepted" | "declined";
 
 type Panel = {
-  color: string;
   score: number;
   name: string;
   story: string;
@@ -19,7 +19,6 @@ type Panel = {
 
 const INITIAL_PANELS: Panel[] = [
   {
-    color: "bg-black",
     score: 67,
     name: "Alexey",
     story:
@@ -32,7 +31,6 @@ const INITIAL_PANELS: Panel[] = [
     status: "pending",
   },
   {
-    color: "bg-black",
     score: 55,
     name: "Jesse",
     story:
@@ -45,7 +43,6 @@ const INITIAL_PANELS: Panel[] = [
     status: "pending",
   },
   {
-    color: "bg-black",
     score: 99,
     name: "Sherry",
     story:
@@ -1242,7 +1239,6 @@ export default function Home() {
     if (!planResponse) return;
 
     const newPanel: Panel = {
-      color: "bg-black",
       score: 50,
       name: name.trim(),
       story: planResponse.story,
@@ -1368,9 +1364,10 @@ export default function Home() {
               <section
                 key={index}
                 data-panel-index={index}
-                className={`relative shrink-0 ${panel.color} ${!showShort && videoId ? "cursor-pointer" : ""}`}
+                className={`relative isolate shrink-0 overflow-hidden ${!showShort && videoId ? "cursor-pointer" : ""}`}
                 style={{ height: panelHeight || "100%" }}
               >
+                <Grainient className="absolute inset-0 z-0 pointer-events-none" />
                 {showShort && videoId && (
                   <ShortVideoOverlay
                     videoId={videoId}
