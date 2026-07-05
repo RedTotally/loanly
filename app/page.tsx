@@ -1304,7 +1304,7 @@ export default function Home() {
       <div className={`absolute inset-[10vmin] overflow-hidden flex items-center justify-center px-10 ${mode === "borrower" ? "" : "hidden"}`}> 
 
         <div >
-
+ 
           <div className={`mb-10 bg-black text-white p-2 rounded-md ${planResponse ? "" : "hidden"}`}>
             <p className="text-xs">Loan Plan: </p>
 
