@@ -64,7 +64,7 @@ export default function TextPressure({
       ref={containerRef}
       onMouseMove={handleMove}
       className="w-full select-none"
-      style={{ fontFamily: "Montserrat, Arial, sans-serif" }}
+      style={{ fontFamily: 'var(--font-google-sans-flex), "Google Sans Flex", sans-serif' }}
     >
       <div className={`flex ${flex ? "flex-wrap" : "flex-wrap"} items-center ${centered ? "justify-center" : "justify-start"} gap-x-1 md:gap-x-2`}>
         {letters.map((letter, index) => {

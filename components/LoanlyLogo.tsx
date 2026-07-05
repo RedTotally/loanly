@@ -15,10 +15,9 @@ export default function LoanlyLogo({ className }: { className?: string }) {
         fill="#52525b"
         transform="translate(313 169.07)"
         style={{
-          fontFamily: "var(--font-doto), Doto, sans-serif",
+          fontFamily: 'var(--font-google-sans-flex), "Google Sans Flex", sans-serif',
           fontSize: "128.33px",
-          fontVariationSettings: "'ROND' 0, 'wght' 900",
-          fontWeight: 800,
+          fontWeight: 900,
         }}
       >
         <tspan x="0" y="0">

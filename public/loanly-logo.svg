@@ -7,10 +7,9 @@
       }
 
       .cls-2 {
-        font-family: 'Doto', Doto-Black, sans-serif;
+        font-family: 'Google Sans Flex', sans-serif;
         font-size: 128.33px;
-        font-variation-settings: 'ROND' 0, 'wght' 900;
-        font-weight: 800;
+        font-weight: 900;
       }
     </style>
   </defs>

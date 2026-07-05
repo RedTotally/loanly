@@ -1,21 +1,11 @@
 import type { Metadata } from "next";
-import { Doto, Geist_Mono, Montserrat } from "next/font/google";
+import { Google_Sans_Flex } from "next/font/google";
 import "./globals.css";
 
-const montserrat = Montserrat({
-  weight: ["400", "500", "700"],
+const googleSansFlex = Google_Sans_Flex({
   subsets: ["latin"],
-  variable: "--font-montserrat",
-});
-
-const doto = Doto({
-  subsets: ["latin"],
-  variable: "--font-doto",
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: "--font-google-sans-flex",
+  adjustFontFallback: false,
 });
 
 export const metadata: Metadata = {
@@ -29,19 +19,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${montserrat.variable} ${doto.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Doto:wght@400;700;900&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="en" className={`${googleSansFlex.variable} h-full antialiased`}>
+      <body className={`${googleSansFlex.className} min-h-full flex flex-col`}>{children}</body>
     </html>
   );
 }
