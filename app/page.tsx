@@ -1301,10 +1301,10 @@ export default function Home() {
         </div>
       </div>
 
-      <div className={`absolute inset-[10vmin] overflow-hidden flex items-center justify-center px-10 ${mode === "borrower" ? "" : "hidden"}`}> 
+      <div className={`absolute inset-[10vmin] overflow-y-auto px-10 ${mode === "borrower" ? "" : "hidden"}`}> 
 
-        <div >
- 
+        <div className="min-h-full flex flex-col justify-center py-10 mx-auto w-full max-w-[30em]">
+
           <div className={`mb-10 bg-black text-white p-2 rounded-md ${planResponse ? "" : "hidden"}`}>
             <p className="text-xs">Loan Plan: </p>
 
@@ -1323,7 +1323,7 @@ export default function Home() {
           </div>
 
           <p className="text-sm">G'day <input value={name} onChange={(e) => setName(e.target.value)} className="border-b border-gray-200 outline-none" placeholder="Enter your name here..."></input>, what you need money for?</p>
-        <textarea value={story} onChange={(e) => setStory(e.target.value)} className="text-sm w-full h-full border-gray-200 rounded-md p-2 outline-none border-[.1em] shadow-sm shadow-zinc-200 mt-5" placeholder="Enter your story here!"></textarea>
+        <textarea value={story} onChange={(e) => setStory(e.target.value)} className="text-sm w-full min-h-[8em] border-gray-200 rounded-md p-2 outline-none border-[.1em] shadow-sm shadow-zinc-200 mt-5" placeholder="Enter your story here!"></textarea>
        <input value={shortUrl} onChange={(e) => setShortUrl(e.target.value)} className="text-sm w-full h-full border-gray-200 rounded-md p-2 outline-none border-[.1em] shadow-sm shadow-zinc-200 mt-2" placeholder="YouTube Short URL"></input>
        
         <p onClick={generateLoanPlan} className="text-sm w-full h-full rounded-md p-2 outline-none border-[.1em] shadow-sm mt-10 bg-black text-white text-center cursor-pointer">Submit</p>
